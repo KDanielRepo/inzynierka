@@ -20,14 +20,16 @@ public class Perceptron {
 
     public Float activation(){
         Double out = (1-Math.exp(-calculateSum()))/(1+Math.exp(-calculateSum()));
-        System.out.println("out to: "+out);
-        if(out<0){
+        //System.out.println("out to: "+out);
+        output = out.floatValue();
+        return output;
+        /*if(out<0.5f){
             output = -1f;
             return -1f;
         }else {
             output = 1f;
             return 1f;
-        }
+        }*/
     }
 
     public Float calculateSum(){
@@ -64,18 +66,11 @@ public class Perceptron {
     public void setInputs(Multimap<Float, Float> inputs) {
         this.inputs = inputs;
     }
-
-    /*public Multimap<Float, Float> getOutputs() {
-        if(outputs.values().isEmpty()){
-            outputs = inputs;
+    public void createInputs(List<Float> weights, List<Float> values){
+        for (int i = 0; i < weights.size(); i++) {
+            inputs.put(weights.get(i),values.get(i));
         }
-        return outputs;
-    }*/
-
-    /*public void setOutputs(Multimap<Float, Float> outputs) {
-        this.outputs = outputs;
-    }*/
-
+    }
     public Float getSum() {
         return sum;
     }
@@ -119,21 +114,3 @@ public class Perceptron {
         inputs = tempMap;
     }
 }
-
-/*
-
-    public void setInputs(Float...floats){
-        inputs.addAll(Arrays.asList(floats));
-    }
-
-    public void setOutputs(Float...floats){
-        outputs.addAll(Arrays.asList(floats));
-    }
-
-    public void setInputWeights(Float...floats){
-        inputWeights.addAll(Arrays.asList(floats));
-    }
-
-    public void setOutputWeights(Float...floats){
-        outputWeights.addAll(Arrays.asList(floats));
-    }*/

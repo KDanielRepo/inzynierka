@@ -1,8 +1,8 @@
-import com.google.common.collect.ArrayListMultimap;
-import com.google.common.collect.Multimap;
+import com.google.common.collect.*;
 
-import java.util.List;
+import java.util.*;
 import java.util.concurrent.ThreadLocalRandom;
+import java.util.stream.Collectors;
 
 public class Brain {
     private Integer lp;
@@ -21,14 +21,31 @@ public class Brain {
         this.perceptronMap = perceptronMap;
     }
 
-    //Zrobic automatyczne polaczenia po każdym cyklu
-    //Zrobic automatyczne generowanie losowych wag
-    public void createPerceptronMap(Integer layers, List<Integer> columns){
+    public Multimap<Integer,Perceptron> getGivenLayer(int layer){
+        return Iterables.get(getPerceptronMap().values(),layer);
+    }
+    public Multimap<Integer,Float> getOutputLayer(){
+        Multimap<Integer,Float> out = Multimaps.transformValues(getGivenLayer(getPerceptronMap().size()-1),Perceptron::activation);
+        return out;
+    }
+
+    public void createPerceptronMap(Integer layers, List<Integer> rows){
         perceptronMap = ArrayListMultimap.create();
         for (int k = 0; k < layers; k++) {//3
             Multimap<Integer,Perceptron> temp = ArrayListMultimap.create();
-            for (int l = 0; l < columns.get(k); l++) {
-                temp.put(l,new Perceptron());
+            for (int l = 0; l < rows.get(k); l++) {
+                Perceptron p = new Perceptron();
+                if(k==0){
+                    Float weight = ThreadLocalRandom.current().nextFloat();
+                    Float value = ThreadLocalRandom.current().nextFloat();
+                    p.getInputs().put(weight,value);
+                }else{
+                    for(Perceptron pp : getGivenLayer(k-1).values()){
+                        Float weight = ThreadLocalRandom.current().nextFloat();
+                        p.getInputs().put(weight,pp.getOutput());
+                    }
+                }
+                temp.put(l,p);
             }
             perceptronMap.put(k,temp);
         }
@@ -36,7 +53,6 @@ public class Brain {
             perceptronMap.put(j,new Perceptron());
         }*/
     }
-
 
 
     public Integer getLp() {
