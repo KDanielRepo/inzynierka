@@ -22,6 +22,17 @@ public class BrainControllerTest {
             Assert.assertEquals(p.getInput(0),);
         }*/
     }
+
+    @Test
+    public void loopTest(){
+        List<Integer> list = new ArrayList<>();
+        list.add(4);
+        list.add(2);
+        list.add(3);
+        list.add(1);
+        list.remove(4);
+        System.out.println(list.size());
+    }
     public Brain createBrain(){
         Brain brain = new Brain();
         List<Integer> integers = new ArrayList<>();

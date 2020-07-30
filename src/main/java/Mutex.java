@@ -1,4 +1,4 @@
-public class Mutex {
+public class Mutex{
     private volatile boolean isLocked = false;
 
     public synchronized void lock(){
@@ -14,5 +14,18 @@ public class Mutex {
     public synchronized void unlock(){
         isLocked = false;
         notify();
+    }
+    public synchronized void unlock(int delay){
+        try {
+            wait(delay);
+        } catch (InterruptedException e) {
+            e.printStackTrace();
+        }
+        isLocked = false;
+        notify();
+    }
+
+    public boolean isLocked() {
+        return isLocked;
     }
 }

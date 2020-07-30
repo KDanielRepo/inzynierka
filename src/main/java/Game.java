@@ -2,6 +2,7 @@ import javafx.application.Application;
 import javafx.event.EventHandler;
 import javafx.scene.Scene;
 import javafx.scene.control.Button;
+import javafx.scene.control.Label;
 import javafx.scene.control.TextArea;
 import javafx.scene.control.TextField;
 import javafx.scene.input.KeyEvent;
@@ -11,6 +12,7 @@ import javafx.scene.layout.VBox;
 import javafx.stage.Stage;
 
 import java.awt.*;
+import java.util.ArrayList;
 import java.util.concurrent.ThreadLocalRandom;
 
 public class Game extends Application {
@@ -18,25 +20,40 @@ public class Game extends Application {
     private TextArea[][] gameArea = new TextArea[4][4];
     private Integer randomA, randomB, score;
     private TextField scoreBoard;
-    private boolean up, right, down, left, game, paused, automation;
+    private boolean up, right, down, left, game, paused, automation, moved;
     private GridPane gameGrid;
     private VBox toolBox;
     private BrainController brainController;
     private Scene scene;
+    private Mutex mutex;
+    private TextField timer;
+    private Integer delay;
+    private Robot robot;
+    private Genetics genetics;
+    private int index = 0;
 
     @Override
     public void start(Stage primaryStage) throws Exception {
         BorderPane borderPane = new BorderPane();
         brainController = new BrainController();
-        game = true;
+        genetics = new Genetics();
+        robot = new Robot();
+        mutex = new Mutex();
         gameGrid = new GridPane();
         toolBox = new VBox();
+        timer = new TextField();
+
+        delay = 100;
+        game = true;
         score = 0;
+
         setGameMatrix();
+        brainController.setCurrentInputs(gameMatrix);
         setGameArea(gameGrid);
         random(2);
         updateGameArea();
         borderPane.setLeft(gameGrid);
+
         scene = new Scene(borderPane);
         scene.getRoot().requestFocus();
         scene.setOnKeyPressed(new EventHandler<KeyEvent>() {
@@ -83,44 +100,59 @@ public class Game extends Application {
         scoreBoard.setEditable(false);
 
         Button pause = new Button("Pause");
-        pause.setOnAction(e->{
-            paused=!paused;
-            if(paused){
+        pause.setOnAction(e -> {
+            paused = !paused;
+            if (paused) {
                 pause.setText("Start");
-            }else{
+            } else {
                 pause.setText("Pause");
             }
         });
         Button restart = new Button("Restart");
-        restart.setOnAction(e->{
+        restart.setOnAction(e -> {
             restart();
         });
-        Button automatic = new Button();
-        automatic.setOnAction(e->{
+        Button automatic = new Button("Start brain");
+        automatic.setOnAction(e -> {
             automation = !automation;
-            if(automation){
+            if (automation) {
                 automatic.setText("Stop Brain");
-            }else{
+            } else {
                 automatic.setText("Start Brain");
             }
         });
         Button nextMove = new Button("next move");
-        nextMove.setOnAction(e->{
+        nextMove.setOnAction(e -> {
             simulateKeyPress(brainController.generateMove());
         });
+        Label timerLabel = new Label("Podaj delay pomiedzy ruchami:");
+        Button timerButton = new Button("Set delay");
+        timerButton.setOnAction(e -> {
+            try {
+                delay = Integer.parseInt(timer.getText());
+            } catch (Exception ex) {
+                System.out.println("Podaj poprawną wartość opóźnienia");
+            }
+        });
 
-
-        toolBox.getChildren().addAll(pause,restart,nextMove,scoreBoard);
-
+        toolBox.getChildren().addAll(pause, restart, nextMove, automatic, scoreBoard, timerLabel, timer, timerButton);
         borderPane.setRight(toolBox);
 
         primaryStage.setScene(scene);
         primaryStage.show();
-        brainController.setCurrentInputs(gameMatrix);
     }
 
     public void update() {
-        if(game && !paused) {
+        if (game && !paused) {
+            if (!mutex.isLocked() && automation) {
+                if (brainController.isNotBlocked()) {
+                    brainController.setCurrentMove(brainController.generateMove());
+                }else{
+                    brainController.setCurrentMove(brainController.generateMoveWithoutBlocks());
+                }
+                simulateKeyPress(brainController.getCurrentMove());
+                mutex.lock();
+            }
             if (left) {
                 for (int k = 0; k < 4; k++) {
                     for (int i = 0; i < 3; i++) {
@@ -128,11 +160,13 @@ public class Game extends Application {
                             if (gameMatrix[i][j].equals(gameMatrix[i + 1][j]) && (gameMatrix[i][j] != 0)) {
                                 gameMatrix[i][j] = gameMatrix[i][j] * 2;
                                 gameMatrix[i + 1][j] = 0;
+                                moved = true;
                             }
                             if (gameMatrix[i][j] == 0) {
                                 if (gameMatrix[i + 1][j] != 0) {
                                     gameMatrix[i][j] = gameMatrix[i + 1][j];
                                     gameMatrix[i + 1][j] = 0;
+                                    moved = true;
                                 }
                             }
                         }
@@ -145,13 +179,13 @@ public class Game extends Application {
                             if (gameMatrix[i][j].equals(gameMatrix[i - 1][j]) && (gameMatrix[i][j] != 0)) {
                                 gameMatrix[i][j] = gameMatrix[i][j] * 2;
                                 gameMatrix[i - 1][j] = 0;
-
+                                moved = true;
                             }
                             if (gameMatrix[i][j] == 0) {
                                 if (gameMatrix[i - 1][j] != 0) {
                                     gameMatrix[i][j] = gameMatrix[i - 1][j];
                                     gameMatrix[i - 1][j] = 0;
-
+                                    moved = true;
                                 }
                             }
                         }
@@ -164,11 +198,13 @@ public class Game extends Application {
                             if (gameMatrix[i][j].equals(gameMatrix[i][j + 1]) && (gameMatrix[i][j] != 0)) {
                                 gameMatrix[i][j] = gameMatrix[i][j] * 2;
                                 gameMatrix[i][j + 1] = 0;
+                                moved = true;
                             }
                             if (gameMatrix[i][j] == 0) {
                                 if (gameMatrix[i][j + 1] != 0) {
                                     gameMatrix[i][j] = gameMatrix[i][j + 1];
                                     gameMatrix[i][j + 1] = 0;
+                                    moved = true;
                                 }
                             }
                         }
@@ -181,27 +217,83 @@ public class Game extends Application {
                             if (gameMatrix[i][j].equals(gameMatrix[i][j - 1]) && (gameMatrix[i][j] != 0)) {
                                 gameMatrix[i][j] = gameMatrix[i][j] * 2;
                                 gameMatrix[i][j - 1] = 0;
+                                moved = true;
                             }
                             if (gameMatrix[i][j] == 0) {
                                 if (gameMatrix[i][j - 1] != 0) {
                                     gameMatrix[i][j] = gameMatrix[i][j - 1];
                                     gameMatrix[i][j - 1] = 0;
+                                    moved = true;
                                 }
                             }
                         }
                     }
                 }
             }
-            random(1);
-            updateGameArea();
-            calculateScore();
-            checkGameOver();
-            brainController.setCurrentInputs(gameMatrix);
+            if (moved) {
+                random(1);
+                updateGameArea();
+                calculateScore();
+                checkGameOver();
+                if (automation) {
+                    brainController.setCurrentInputs(gameMatrix);
+                    brainController.getBlocks().clear();
+                }
+                moved = false;
+            } else {
+                brainController.addBlock(brainController.getCurrentMove());
+                mutex.unlock(delay);
+            }
+        } else if (!game) {
+            System.out.println(score);
+            restart();
+            index++;
+            if(index<genetics.getPopulation()){
+                update();
+            }
         }
     }
 
-    public void checkGameOver(){
-
+    public void checkGameOver() {
+        int test = 0;
+        int test2 = 0;
+        int test3 = 0;
+        int test4 = 0;
+        for (int i = 0; i < 3; i++) {
+            for (int j = 0; j < 4; j++) {
+                if (gameMatrix[i][j] != gameMatrix[i + 1][j] && (gameMatrix[i][j] > 0) && (gameMatrix[i + 1][j] > 0)) {
+                    test++;
+                }
+            }
+        }
+        for (int i = 3; i > 0; i--) {
+            for (int j = 0; j < 4; j++) {
+                if (gameMatrix[i][j] != gameMatrix[i - 1][j] && (gameMatrix[i][j] > 0) && (gameMatrix[i - 1][j] > 0)) {
+                    test2++;
+                }
+            }
+        }
+        for (int i = 0; i < 4; i++) {
+            for (int j = 0; j < 3; j++) {
+                if (gameMatrix[i][j] != gameMatrix[i][j + 1] && (gameMatrix[i][j] > 0) && (gameMatrix[i][j + 1] > 0)) {
+                    test3++;
+                }
+            }
+        }
+        for (int i = 0; i < 4; i++) {
+            for (int j = 3; j > 0; j--) {
+                if (gameMatrix[i][j] != gameMatrix[i][j - 1] && (gameMatrix[i][j] > 0) && (gameMatrix[i][j - 1] > 0)) {
+                    test4++;
+                }
+            }
+        }
+        boolean noUp = test == 12;
+        boolean noRight = test2 == 12;
+        boolean noDown = test3 == 12;
+        boolean noLeft = test4 == 12;
+        if (noUp && noRight && noDown && noLeft) {
+            game = false;
+        }
     }
 
     public void setGameMatrix() {
@@ -234,6 +326,9 @@ public class Game extends Application {
                 }
             }
         }
+        if (automation) {
+            mutex.unlock(delay);
+        }
     }
 
     public void random(int times) {
@@ -263,26 +358,43 @@ public class Game extends Application {
         }
     }
 
-    public void calculateScore(){
+    public void calculateScore() {
+        score = 0;
         for (int i = 0; i < 4; i++) {
             for (int j = 0; j < 4; j++) {
-                score+=gameMatrix[i][j];
+                score += gameMatrix[i][j];
             }
         }
         scoreBoard.setText(score.toString());
     }
 
-    public void restart(){
+    public void restart() {
+        if (automation) {
+            brainController.getBrain().setScore(score);
+            brainController.getBrain().setLp(index);
+            genetics.getGenePool().add(brainController.getBrain());
+            Brain brain = new Brain();
+            brain.createDefaultPerceptronMap();
+            brainController.setBrain(brain);
+            brainController.getBlocks().clear();
+            if (index == genetics.getPopulation()) {
+                for (int i = 0; i < genetics.getGenePool().size(); i++) {
+                    System.out.println(genetics.getGenePool().get(i).getScore());
+                }
+            }
+        }
         score = 0;
+        game = true;
         setGameMatrix();
         updateGameArea();
         calculateScore();
+        random(2);
+        updateGameArea();
     }
 
-    public void simulateKeyPress(int i){
-        try{
-            Robot robot = new Robot();
-            switch (i){
+    public void simulateKeyPress(int i) {
+        try {
+            switch (i) {
                 case 0:
                     robot.keyPress(java.awt.event.KeyEvent.VK_W);
                     robot.delay(10);
@@ -304,27 +416,10 @@ public class Game extends Application {
                     robot.keyRelease(java.awt.event.KeyEvent.VK_A);
                     break;
             }
-        }catch (Exception e){
+        } catch (Exception e) {
             e.printStackTrace();
         }
 
-    }
-
-    public void translateMove(){
-        switch(brainController.generateMove()){
-            case 0:
-                up = true;
-                break;
-            case 1:
-                left = true;
-                break;
-            case 2:
-                down = true;
-                break;
-            case 3:
-                right = true;
-                break;
-        }
     }
 
     public static void main(String[] args) {

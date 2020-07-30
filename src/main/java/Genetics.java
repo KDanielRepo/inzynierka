@@ -11,7 +11,12 @@ public class Genetics {
     private Brain best;
     private int population;
 
-    public Genetics(){}
+    public Genetics(){
+        population = 10;
+    }
+    public Genetics(int population){
+        this.population = population;
+    }
 
     public void createOffspring() {
         //ustawianie PC kazdego osobnika
@@ -179,5 +184,13 @@ public class Genetics {
 
     public void setConvergence(int convergence) {
         this.convergence = convergence;
+    }
+
+    public int getPopulation() {
+        return population;
+    }
+
+    public void setPopulation(int population) {
+        this.population = population;
     }
 }
