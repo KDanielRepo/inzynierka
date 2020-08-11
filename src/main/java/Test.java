@@ -15,7 +15,7 @@ public class Test {
         p2.getInputs().put(-0.5f,p.getOutput());
         p2.getInputs().put(0.5f,p1.getOutput());
         System.out.println(p2.activation());*/
-        Brain brain = new Brain();
+        /*Brain brain = new Brain();
         List<Integer> list = new ArrayList<>();
         list.add(16);
         list.add(4);
@@ -32,6 +32,20 @@ public class Test {
                 System.out.println("++++++++++++++++++++++++++");
             });
             System.out.println("________________________________");
-        });
+        });*/
+        /*Float sum = 10f;
+        Float lambda = 1.0507f;
+        Float alpha = 1.6732f;
+        Float output = 0f;
+        if(sum<0){
+            Double a = (alpha*Math.exp(sum)-alpha)*lambda;
+            output = a.floatValue();
+        }else{
+            output = sum * lambda;
+        }*/
+        //Float output = Math.max(0, -15f);
+        //double output = 1/(1+Math.exp(-64));
+        float output = 0.0000000001f;
+        System.out.println(output);
     }
 }

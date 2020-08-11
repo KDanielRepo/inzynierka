@@ -1,10 +1,12 @@
 import javafx.application.Application;
 import javafx.event.EventHandler;
+import javafx.event.EventType;
 import javafx.scene.Scene;
 import javafx.scene.control.Button;
 import javafx.scene.control.Label;
 import javafx.scene.control.TextArea;
 import javafx.scene.control.TextField;
+import javafx.scene.input.KeyCode;
 import javafx.scene.input.KeyEvent;
 import javafx.scene.layout.BorderPane;
 import javafx.scene.layout.GridPane;
@@ -13,6 +15,7 @@ import javafx.stage.Stage;
 
 import java.awt.*;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.concurrent.ThreadLocalRandom;
 
 public class Game extends Application {
@@ -26,11 +29,14 @@ public class Game extends Application {
     private BrainController brainController;
     private Scene scene;
     private Mutex mutex;
+    private Mutex keyMutex;
     private TextField timer;
     private Integer delay;
     private Robot robot;
     private Genetics genetics;
     private int index = 0;
+    private int generationIndex = 0;
+    private boolean groupset;
 
     @Override
     public void start(Stage primaryStage) throws Exception {
@@ -39,6 +45,7 @@ public class Game extends Application {
         genetics = new Genetics();
         robot = new Robot();
         mutex = new Mutex();
+        keyMutex = new Mutex();
         gameGrid = new GridPane();
         toolBox = new VBox();
         timer = new TextField();
@@ -147,7 +154,7 @@ public class Game extends Application {
             if (!mutex.isLocked() && automation) {
                 if (brainController.isNotBlocked()) {
                     brainController.setCurrentMove(brainController.generateMove());
-                }else{
+                } else {
                     brainController.setCurrentMove(brainController.generateMoveWithoutBlocks());
                 }
                 simulateKeyPress(brainController.getCurrentMove());
@@ -239,8 +246,10 @@ public class Game extends Application {
                     brainController.setCurrentInputs(gameMatrix);
                     brainController.getBlocks().clear();
                 }
+                //brainController.setCurrentInputs(gameMatrix);
+                //values();
                 moved = false;
-            } else {
+            } else if (!moved && automation) {
                 brainController.addBlock(brainController.getCurrentMove());
                 mutex.unlock(delay);
             }
@@ -248,10 +257,65 @@ public class Game extends Application {
             System.out.println(score);
             restart();
             index++;
-            if(index<genetics.getPopulation()){
+            if (index < genetics.getPopulation()) {
                 update();
+            } else {
+                groupset = true;
+                //before();
+                System.out.println("generacja: " + generationIndex);
+                System.out.println("Sredni fitness to: ");
+                genetics.getAverageFitness();
+                genetics.calculateGlobalFitness();
+                genetics.calculateRFitness();
+                //genetics.getFittest();
+                genetics.createOffspringNew();
+                genetics.resetPcPool();
+                //after();
+                index = 0;
+                generationIndex++;
+                System.out.println("---------------------------");
+                if (generationIndex <= genetics.getGeneration()) {
+                    update();
+                } else {
+                    for (int i = 0; i < genetics.getGenePool().size(); i++) {
+                        System.out.println(genetics.getGenePool().get(i).getScore());
+                    }
+
+                }
             }
         }
+    }
+
+    public void before() {
+        for (int i = 0; i < genetics.getGenePool().size(); i++) {
+            System.out.println("Przed, nr: " + i);
+            genetics.getGenePool().get(i).getPerceptronMap().values().stream().forEach(e -> {
+                e.values().stream().forEach(o -> {
+                    System.out.println(o.getWeights());
+                });
+            });
+            System.out.println("-----------------------------------------");
+        }
+    }
+
+    public void after() {
+        for (int i = 0; i < genetics.getGenePool().size(); i++) {
+            System.out.println("Po, nr: " + i);
+            genetics.getGenePool().get(i).getPerceptronMap().values().stream().forEach(e -> {
+                e.values().stream().forEach(o -> {
+                    System.out.println(o.getWeights());
+                });
+            });
+            System.out.println("-----------------------------------------");
+        }
+    }
+
+    public void values() {
+        brainController.getBrain().getPerceptronMap().values().stream().forEach(e -> {
+            e.values().stream().forEach(o -> {
+                System.out.println(o.getInputs());
+            });
+        });
     }
 
     public void checkGameOver() {
@@ -362,7 +426,46 @@ public class Game extends Application {
         score = 0;
         for (int i = 0; i < 4; i++) {
             for (int j = 0; j < 4; j++) {
+                if (j + 1 < 4) {
+                    if ((gameMatrix[i][j + 1] == gameMatrix[i][j] / 2)) {
+                        score += gameMatrix[i][j] * gameMatrix[i][j + 1];
+                    }
+                }
+                if (j - 1 > 0) {
+                    if ((gameMatrix[i][j] * 2 == gameMatrix[i][j - 1])) {
+                        score += gameMatrix[i][j] * gameMatrix[i][j - 1];
+                    }
+                }
+                if (i + 1 < 4) {
+                    if ((gameMatrix[i + 1][j] == gameMatrix[i][j] / 2)) {
+                        score += gameMatrix[i + 1][j] * gameMatrix[i][j];
+                    }
+                }
+                if (i - 1 > 0) {
+                    if ((gameMatrix[i - 1][j] == gameMatrix[i][j] * 2)) {
+                        score += gameMatrix[i - 1][j] * gameMatrix[i][j];
+                    }
+                }
                 score += gameMatrix[i][j];
+                /*if (i - 1 > 0 && i + 1 < 4 && j - 1 > 0 && j + 1 < 4) {//srodek
+                    score += ((gameMatrix[i][j])+1) * ((gameMatrix[i-1][j])+1) * ((gameMatrix[i+1][j])+1) * ((gameMatrix[i][j-1])+1) * ((gameMatrix[i][j+1])+1);
+                } else if (i - 1 < 0 && i + 1 < 4 && j - 1 < 0 && j + 1 < 4) {//lewy gorny
+                    score += ((gameMatrix[i][j])+1) * ((gameMatrix[i+1][j])+1) * ((gameMatrix[i][j+1])+1);
+                } else if (i - 1 < 0 && i + 1 < 4 && j - 1 > 0 && j + 1 > 4) {//prawy gorny
+                    score += ((gameMatrix[i][j])+1) * ((gameMatrix[i+1][j])+1) * ((gameMatrix[i][j-1])+1);
+                } else if (i - 1 > 0 && i + 1 > 4 && j - 1 < 0 && j + 1 < 4) {//lewy dolny
+                    score += ((gameMatrix[i][j])+1) * ((gameMatrix[i-1][j])+1) * ((gameMatrix[i][j+1])+1);
+                } else if (i - 1 > 0 && i + 1 > 4 && j - 1 > 0 && j + 1 > 4) {//prawy dolny
+                    score += ((gameMatrix[i][j])+1) * ((gameMatrix[i-1][j])+1) * ((gameMatrix[i][j-1])+1);
+                } else if (i - 1 < 0 && i + 1 < 4 && j - 1 > 0 && j + 1 < 4) {//brak gory
+                    score += ((gameMatrix[i][j])+1) * ((gameMatrix[i+1][j])+1) * ((gameMatrix[i][j-1])+1) * ((gameMatrix[i][j+1])+1);
+                } else if (i - 1 > 0 && i + 1 > 4 && j - 1 > 0 && j + 1 < 4) {//brak dolu
+                    score += ((gameMatrix[i][j])+1) * ((gameMatrix[i-1][j])+1) * ((gameMatrix[i][j-1])+1) * ((gameMatrix[i][j+1])+1);
+                } else if (i - 1 > 0 && i + 1 < 4 && j - 1 < 0 && j + 1 < 4) {//brak lewego
+                    score += ((gameMatrix[i][j])+1) * ((gameMatrix[i-1][j])+1) * ((gameMatrix[i+1][j])+1) * ((gameMatrix[i][j+1])+1);
+                } else if (i - 1 > 0 && i + 1 < 4 && j - 1 > 0 && j + 1 > 4) {//brak prawego
+                    score += ((gameMatrix[i][j])+1) * ((gameMatrix[i-1][j])+1) * ((gameMatrix[i+1][j])+1) * ((gameMatrix[i][j-1])+1);
+                }*/
             }
         }
         scoreBoard.setText(score.toString());
@@ -372,10 +475,14 @@ public class Game extends Application {
         if (automation) {
             brainController.getBrain().setScore(score);
             brainController.getBrain().setLp(index);
-            genetics.getGenePool().add(brainController.getBrain());
-            Brain brain = new Brain();
-            brain.createDefaultPerceptronMap();
-            brainController.setBrain(brain);
+            if (!groupset) {
+                genetics.getGenePool().add(brainController.getBrain());
+                Brain brain = new Brain();
+                brain.createDefaultPerceptronMap();
+                brainController.setBrain(brain);
+            } else {
+                brainController.setBrain(genetics.getGenePool().get(index));
+            }
             brainController.getBlocks().clear();
             if (index == genetics.getPopulation()) {
                 for (int i = 0; i < genetics.getGenePool().size(); i++) {
@@ -397,22 +504,22 @@ public class Game extends Application {
             switch (i) {
                 case 0:
                     robot.keyPress(java.awt.event.KeyEvent.VK_W);
-                    robot.delay(10);
+                    robot.delay(delay);
                     robot.keyRelease(java.awt.event.KeyEvent.VK_W);
                     break;
                 case 1:
                     robot.keyPress(java.awt.event.KeyEvent.VK_D);
-                    robot.delay(10);
+                    robot.delay(delay);
                     robot.keyRelease(java.awt.event.KeyEvent.VK_D);
                     break;
                 case 2:
                     robot.keyPress(java.awt.event.KeyEvent.VK_S);
-                    robot.delay(10);
+                    robot.delay(delay);
                     robot.keyRelease(java.awt.event.KeyEvent.VK_S);
                     break;
                 case 3:
                     robot.keyPress(java.awt.event.KeyEvent.VK_A);
-                    robot.delay(10);
+                    robot.delay(delay);
                     robot.keyRelease(java.awt.event.KeyEvent.VK_A);
                     break;
             }

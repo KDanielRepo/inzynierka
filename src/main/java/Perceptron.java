@@ -9,38 +9,36 @@ import java.util.Map;
 import java.util.stream.Collectors;
 
 public class Perceptron {
-    private Multimap<Float,Float> inputs;
+    private Multimap<Float, Float> inputs;
     private Float output;
     private Float sum;
 
-    public Perceptron(){
+    public Perceptron() {
         inputs = HashMultimap.create();
         sum = 0f;
     }
 
-    public Float activation(){
-        Double out = (1-Math.exp(-calculateSum()))/(1+Math.exp(-calculateSum()));
-        //System.out.println("out to: "+out);
-        output = out.floatValue();
-        return output;
-        /*if(out<0.5f){
-            output = -1f;
-            return -1f;
-        }else {
-            output = 1f;
-            return 1f;
-        }*/
+    public Float activation() {
+        //Float out = Math.max(0, calculateSum());
+        Float lambda = 1.0507f;
+        Float alpha = 1.6732f;
+        if(calculateSum()<0){
+            Double a = (alpha*Math.exp(sum)-alpha)*lambda;
+            return output = a.floatValue();
+        }else{
+            return output = sum * lambda;
+        }
     }
 
-    public Float calculateSum(){
+    public Float calculateSum() {
         sum = 0f;
-        inputs.entries().forEach(entry -> sum += entry.getKey()*entry.getValue());
+        inputs.entries().forEach(entry -> sum += entry.getKey() * (entry.getValue()*0.0001f));
         return sum;
     }
 
     public Float getOutput() {
-        if(output == null){
-            output = Iterables.get(inputs.values(),0);
+        if (output == null) {
+            activation();
         }
         return output;
     }
@@ -55,8 +53,8 @@ public class Perceptron {
         out.put(Iterables.get(outputs.keys(),i),Iterables.get(outputs.values(),i));
         return out;
     }*/
-    public Float getInput(Integer i){
-        return Iterables.get(inputs.values(),i);
+    public Float getInput(Integer i) {
+        return Iterables.get(inputs.values(), i);
     }
 
     public Multimap<Float, Float> getInputs() {
@@ -66,11 +64,13 @@ public class Perceptron {
     public void setInputs(Multimap<Float, Float> inputs) {
         this.inputs = inputs;
     }
-    public void createInputs(List<Float> weights, List<Float> values){
+
+    public void createInputs(List<Float> weights, List<Float> values) {
         for (int i = 0; i < weights.size(); i++) {
-            inputs.put(weights.get(i),values.get(i));
+            inputs.put(weights.get(i), values.get(i));
         }
     }
+
     public Float getSum() {
         return sum;
     }
@@ -79,37 +79,38 @@ public class Perceptron {
         this.sum = sum;
     }
 
-    public List<Float> getWeights(){
+    public List<Float> getWeights() {
         return inputs.keys().stream().map(Float::floatValue).collect(Collectors.toList());
     }
 
-    public void replacePerceptronValue(int index,float value){
-        Multimap<Float,Float> tempMap = HashMultimap.create();
+    public void replacePerceptronValue(int index, float value) {
+        Multimap<Float, Float> tempMap = HashMultimap.create();
         for (int i = 0; i < inputs.size(); i++) {
-            if(i!=index){
-                tempMap.put(Iterables.get(inputs.keys(),i),Iterables.get(inputs.values(),i));
-            }else{
-                tempMap.put(Iterables.get(inputs.keys(),i),value);
+            if (i != index) {
+                tempMap.put(Iterables.get(inputs.keys(), i), Iterables.get(inputs.values(), i));
+            } else {
+                tempMap.put(Iterables.get(inputs.keys(), i), value);
             }
 
         }
-        if(output==Iterables.get(inputs.values(),0)){
-            output=Iterables.get(tempMap.values(),0);
+        if (output == Iterables.get(inputs.values(), 0)) {
+            output = Iterables.get(tempMap.values(), 0);
         }
         inputs = tempMap;
     }
-    public void replacePerceptronWeight(int index,float weight){
-        Multimap<Float,Float> tempMap = HashMultimap.create();
+
+    public void replacePerceptronWeight(int index, float weight) {
+        Multimap<Float, Float> tempMap = HashMultimap.create();
         for (int i = 0; i < inputs.size(); i++) {
-            if(i!=index){
-                tempMap.put(Iterables.get(inputs.keys(),i),Iterables.get(inputs.values(),i));
-            }else{
-                tempMap.put(weight,Iterables.get(inputs.values(),i));
+            if (i != index) {
+                tempMap.put(Iterables.get(inputs.keys(), i), Iterables.get(inputs.values(), i));
+            } else {
+                tempMap.put(weight, Iterables.get(inputs.values(), i));
             }
 
         }
-        if(output==Iterables.get(inputs.values(),0)){
-            output=Iterables.get(tempMap.values(),0);
+        if (output == Iterables.get(inputs.values(), 0)) {
+            output = Iterables.get(tempMap.values(), 0);
         }
         inputs = tempMap;
     }
