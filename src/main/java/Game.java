@@ -426,8 +426,17 @@ public class Game extends Application {
         score = 0;
         for (int i = 0; i < 4; i++) {
             for (int j = 0; j < 4; j++) {
-                if (j + 1 < 4) {
-                    if ((gameMatrix[i][j + 1] == gameMatrix[i][j] / 2)) {
+                if(gameMatrix[i][j]!=0){
+                    int test = gameMatrix[i][j];
+                    int test2 = 0;
+                    while(test !=1){
+                        test2++;
+                        test = test/2;
+                    }
+                    score += gameMatrix[i][j] * test2;
+                }
+                /*if (j + 1 < 4) {
+                    if ((gameMatrix[i][j]/2 == gameMatrix[i][j+1])) {
                         score += gameMatrix[i][j] * gameMatrix[i][j + 1];
                     }
                 }
@@ -437,16 +446,16 @@ public class Game extends Application {
                     }
                 }
                 if (i + 1 < 4) {
-                    if ((gameMatrix[i + 1][j] == gameMatrix[i][j] / 2)) {
+                    if ((gameMatrix[i][j]/2 == gameMatrix[i+1][j])) {
                         score += gameMatrix[i + 1][j] * gameMatrix[i][j];
                     }
                 }
                 if (i - 1 > 0) {
-                    if ((gameMatrix[i - 1][j] == gameMatrix[i][j] * 2)) {
+                    if ((gameMatrix[i][j] * 2 == gameMatrix[i-1][j])) {
                         score += gameMatrix[i - 1][j] * gameMatrix[i][j];
                     }
-                }
-                score += gameMatrix[i][j];
+                }*/
+
                 /*if (i - 1 > 0 && i + 1 < 4 && j - 1 > 0 && j + 1 < 4) {//srodek
                     score += ((gameMatrix[i][j])+1) * ((gameMatrix[i-1][j])+1) * ((gameMatrix[i+1][j])+1) * ((gameMatrix[i][j-1])+1) * ((gameMatrix[i][j+1])+1);
                 } else if (i - 1 < 0 && i + 1 < 4 && j - 1 < 0 && j + 1 < 4) {//lewy gorny
