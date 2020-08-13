@@ -32,7 +32,7 @@ public class Perceptron {
 
     public Float calculateSum() {
         sum = 0f;
-        inputs.entries().forEach(entry -> sum += entry.getKey() * (entry.getValue()*0.0001f));
+        inputs.entries().forEach(entry -> sum += entry.getKey() * (entry.getValue()*0.001f));
         return sum;
     }
 

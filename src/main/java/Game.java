@@ -1,7 +1,10 @@
 import javafx.application.Application;
 import javafx.event.EventHandler;
 import javafx.event.EventType;
+import javafx.scene.Group;
 import javafx.scene.Scene;
+import javafx.scene.canvas.Canvas;
+import javafx.scene.canvas.GraphicsContext;
 import javafx.scene.control.Button;
 import javafx.scene.control.Label;
 import javafx.scene.control.TextArea;
@@ -11,6 +14,8 @@ import javafx.scene.input.KeyEvent;
 import javafx.scene.layout.BorderPane;
 import javafx.scene.layout.GridPane;
 import javafx.scene.layout.VBox;
+import javafx.scene.paint.Color;
+import javafx.scene.paint.Paint;
 import javafx.stage.Stage;
 
 import java.awt.*;
@@ -37,6 +42,16 @@ public class Game extends Application {
     private int index = 0;
     private int generationIndex = 0;
     private boolean groupset;
+    private TextArea textArea;
+    private int moves = 0;
+    private int tries = 0;
+    private boolean multipleTries;
+    private boolean visual;
+
+    //vizualizacja
+    private GraphicsContext gc;
+    private Stage neuralNetworkStage;
+    private Canvas canvas;
 
     @Override
     public void start(Stage primaryStage) throws Exception {
@@ -141,12 +156,99 @@ public class Game extends Application {
                 System.out.println("Podaj poprawną wartość opóźnienia");
             }
         });
+        Button visualButton = new Button("Visual");
+        visualButton.setOnAction(e->{
+            visual = !visual;
+            if(!visual){
+                visualButton.setText("Visual");
+            }else{
+                visualButton.setText("No visual");
+            }
+        });
+        Button multipleTriesButton = new Button("Single Try");
+        multipleTriesButton.setOnAction(e->{
+            multipleTries=!multipleTries;
+            if(multipleTries){
+                multipleTriesButton.setText("Multiple Tries");
+            }else{
+                multipleTriesButton.setText("Single Try");
+            }
+        });
 
-        toolBox.getChildren().addAll(pause, restart, nextMove, automatic, scoreBoard, timerLabel, timer, timerButton);
+        toolBox.getChildren().addAll(pause, restart, nextMove, automatic, scoreBoard, timerLabel, timer, timerButton,visualButton,multipleTriesButton);
         borderPane.setRight(toolBox);
 
         primaryStage.setScene(scene);
+        primaryStage.setX(0);
+        primaryStage.setY(0);
         primaryStage.show();
+        visualizeNeuralNetwork();
+    }
+
+    public void visualizeNeuralNetwork(){
+        neuralNetworkStage = new Stage();
+        neuralNetworkStage.setMinWidth(600);
+        neuralNetworkStage.setMinHeight(600);
+
+        BorderPane borderPane = new BorderPane();
+        Scene neuralNetworkScene = new Scene(borderPane);
+        neuralNetworkStage.setScene(neuralNetworkScene);
+        neuralNetworkStage.setX(300);
+        neuralNetworkStage.setY(300);
+        neuralNetworkStage.show();
+
+        canvas = new Canvas(1600,800);
+        gc = canvas.getGraphicsContext2D();
+        borderPane.setCenter(canvas);
+    }
+    public void updateNeuralNetworkVisualization(){
+        if(neuralNetworkStage!=null){
+            gc.clearRect(0,0,canvas.getWidth(),canvas.getHeight());
+            gc.setStroke(Color.BLACK);
+            gc.setLineWidth(2f);
+
+            int divisionSize = brainController.getBrain().getPerceptronMap().get(0).stream().findFirst().get().size();
+            int layer = brainController.getBrain().getPerceptronMap().size();
+            int neuronWidth = (int) canvas.getHeight()/divisionSize;
+            int neuronHeight = (int) canvas.getHeight()/divisionSize;
+
+            for (int i = 0; i < divisionSize; i++) {
+                for (int k = 0; k < divisionSize; k++) {
+                    //zaczyna sie przy kazdym wejsciu albo neuronie
+                    //leci do kazdego nastepnego neuronu
+                    // i to warstwa w sieci, j to numer danego neuronu w danej sieci
+                    gc.setStroke(Color.RED);
+                    gc.strokeLine(canvas.getWidth()/layer*0+neuronWidth/2,canvas.getHeight()/divisionSize*i+neuronHeight/2,canvas.getWidth()/layer*1-neuronWidth,canvas.getHeight()/divisionSize*k+neuronHeight/2);
+                }
+            }
+
+            for (int i = 1; i < layer+1; i++) {
+                int layerSize = brainController.getBrain().getPerceptronMap().get(i-1).stream().findFirst().get().size();
+                for (int j = 0; j < layerSize; j++) {
+                    if(i==1){
+                        gc.strokeText(gameMatrix[j/4][j%4].toString(),canvas.getWidth()/layer*(i-1),canvas.getHeight()/divisionSize*j+neuronHeight/2);
+                    }
+                    for (int k = 0; k < layerSize; k++) {
+                        int layerSizeNext = layerSize;
+                        if(i<layer) {
+                            layerSizeNext = brainController.getBrain().getPerceptronMap().get(i).stream().findFirst().get().size();
+                        }
+                        //zaczyna sie przy kazdym wejsciu albo neuronie
+                        //leci do kazdego nastepnego neuronu
+                        // i to warstwa w sieci, j to numer danego neuronu w danej sieci
+                        gc.setStroke(Color.RED);
+                        if(k<layerSizeNext)
+                        gc.strokeLine(canvas.getWidth()/layer*(i)+neuronWidth,canvas.getHeight()/divisionSize*j+neuronHeight/2,canvas.getWidth()/layer*(i+1)-neuronWidth,canvas.getHeight()/divisionSize*k+neuronHeight/2);
+                    }
+                    gc.setStroke(Color.BLACK);
+                    gc.strokeOval(canvas.getWidth()/layer*i-neuronWidth,canvas.getHeight()/divisionSize*j,neuronWidth,neuronHeight);
+                    gc.strokeText(brainController.getBrain().getPerceptronMap().get(i-1).stream().findFirst().get().get(j).stream().findFirst().get().getOutput().toString(),canvas.getWidth()/layer*i-neuronWidth,canvas.getHeight()/divisionSize*j+neuronHeight/2);
+                    //System.out.println("input: "+brainController.getBrain().getPerceptronMap().get(i-1).stream().findFirst().get().get(j).stream().findFirst().get().getInput(0).toString());
+                    //System.out.println(brainController.getBrain().getPerceptronMap().get(i-1).stream().findFirst().get().get(j).stream().findFirst().get().getOutput().toString());
+                }
+                //System.out.println("---------------------");
+            }
+        }
     }
 
     public void update() {
@@ -158,7 +260,9 @@ public class Game extends Application {
                     brainController.setCurrentMove(brainController.generateMoveWithoutBlocks());
                 }
                 simulateKeyPress(brainController.getCurrentMove());
-                mutex.lock();
+                if(!visual){
+                    mutex.lock();
+                }
             }
             if (left) {
                 for (int k = 0; k < 4; k++) {
@@ -166,6 +270,7 @@ public class Game extends Application {
                         for (int j = 0; j < 4; j++) {
                             if (gameMatrix[i][j].equals(gameMatrix[i + 1][j]) && (gameMatrix[i][j] != 0)) {
                                 gameMatrix[i][j] = gameMatrix[i][j] * 2;
+                                score+=gameMatrix[i][j];
                                 gameMatrix[i + 1][j] = 0;
                                 moved = true;
                             }
@@ -185,6 +290,7 @@ public class Game extends Application {
                         for (int j = 0; j < 4; j++) {
                             if (gameMatrix[i][j].equals(gameMatrix[i - 1][j]) && (gameMatrix[i][j] != 0)) {
                                 gameMatrix[i][j] = gameMatrix[i][j] * 2;
+                                score+=gameMatrix[i][j];
                                 gameMatrix[i - 1][j] = 0;
                                 moved = true;
                             }
@@ -204,6 +310,7 @@ public class Game extends Application {
                         for (int j = 0; j < 3; j++) {
                             if (gameMatrix[i][j].equals(gameMatrix[i][j + 1]) && (gameMatrix[i][j] != 0)) {
                                 gameMatrix[i][j] = gameMatrix[i][j] * 2;
+                                score+=gameMatrix[i][j];
                                 gameMatrix[i][j + 1] = 0;
                                 moved = true;
                             }
@@ -223,6 +330,7 @@ public class Game extends Application {
                         for (int j = 3; j > 0; j--) {
                             if (gameMatrix[i][j].equals(gameMatrix[i][j - 1]) && (gameMatrix[i][j] != 0)) {
                                 gameMatrix[i][j] = gameMatrix[i][j] * 2;
+                                score+=gameMatrix[i][j];
                                 gameMatrix[i][j - 1] = 0;
                                 moved = true;
                             }
@@ -238,9 +346,12 @@ public class Game extends Application {
                 }
             }
             if (moved) {
+                moves++;
                 random(1);
-                updateGameArea();
-                calculateScore();
+                if(!visual){
+                    updateGameArea();
+                }
+
                 checkGameOver();
                 if (automation) {
                     brainController.setCurrentInputs(gameMatrix);
@@ -251,12 +362,15 @@ public class Game extends Application {
                 moved = false;
             } else if (!moved && automation) {
                 brainController.addBlock(brainController.getCurrentMove());
-                mutex.unlock(delay);
+                if(!visual){
+                    mutex.unlock(delay);
+                }
             }
         } else if (!game) {
+            tries++;
             System.out.println(score);
             restart();
-            index++;
+            //index++;
             if (index < genetics.getPopulation()) {
                 update();
             } else {
@@ -268,7 +382,7 @@ public class Game extends Application {
                 genetics.calculateGlobalFitness();
                 genetics.calculateRFitness();
                 //genetics.getFittest();
-                genetics.createOffspringNew();
+                genetics.createOffspring();
                 genetics.resetPcPool();
                 //after();
                 index = 0;
@@ -393,6 +507,7 @@ public class Game extends Application {
         if (automation) {
             mutex.unlock(delay);
         }
+        updateNeuralNetworkVisualization();
     }
 
     public void random(int times) {
@@ -481,31 +596,64 @@ public class Game extends Application {
     }
 
     public void restart() {
-        if (automation) {
-            brainController.getBrain().setScore(score);
-            brainController.getBrain().setLp(index);
-            if (!groupset) {
+        if(multipleTries){
+            if(tries<10 && automation){
+                brainController.getBrain().setScore(brainController.getBrain().getScore()+score);
+                brainController.getBrain().setLp(index);
+                brainController.getBrain().setMoves(brainController.getBrain().getMoves()+moves);
+            }
+            if (!groupset && tries>=10) {
+                brainController.getBrain().setScore((brainController.getBrain().getScore()+score)/10);
+                brainController.getBrain().setLp(index);
+                brainController.getBrain().setMoves((brainController.getBrain().getMoves()+moves)/10);
+                index++;
                 genetics.getGenePool().add(brainController.getBrain());
                 Brain brain = new Brain();
                 brain.createDefaultPerceptronMap();
                 brainController.setBrain(brain);
-            } else {
+                tries = 0;
+            } else if(groupset && tries >=10){
+                brainController.getBrain().setScore((brainController.getBrain().getScore()+score)/10);
+                brainController.getBrain().setLp(index);
+                brainController.getBrain().setMoves((brainController.getBrain().getMoves()+moves)/10);
                 brainController.setBrain(genetics.getGenePool().get(index));
+                index++;
+                tries = 0;
             }
-            brainController.getBlocks().clear();
-            if (index == genetics.getPopulation()) {
-                for (int i = 0; i < genetics.getGenePool().size(); i++) {
-                    System.out.println(genetics.getGenePool().get(i).getScore());
+        }else{
+            if (automation) {
+                brainController.getBrain().setScore(score);
+                brainController.getBrain().setLp(index);
+                if (!groupset) {
+                    genetics.getGenePool().add(brainController.getBrain());
+                    Brain brain = new Brain();
+                    brain.createDefaultPerceptronMap();
+                    brainController.setBrain(brain);
+                } else {
+                    brainController.setBrain(genetics.getGenePool().get(index));
                 }
             }
+            index++;
         }
+        System.out.println("index: "+index);
+        brainController.getBlocks().clear();
+        if (index == genetics.getPopulation()) {
+            for (int i = 0; i < genetics.getGenePool().size(); i++) {
+                System.out.println(genetics.getGenePool().get(i).getScore());
+            }
+        }
+        moves = 0;
         score = 0;
         game = true;
         setGameMatrix();
-        updateGameArea();
-        calculateScore();
+        if(!visual){
+            updateGameArea();
+        }
+
         random(2);
-        updateGameArea();
+        if(!visual){
+            updateGameArea();
+        }
     }
 
     public void simulateKeyPress(int i) {

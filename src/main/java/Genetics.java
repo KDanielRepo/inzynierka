@@ -15,8 +15,8 @@ public class Genetics {
 
     public Genetics() {
         best = new Brain();
-        population = 100;
-        generation = 50;
+        population = 200;
+        generation = 500;
     }
 
     public Genetics(int population) {
@@ -81,7 +81,7 @@ public class Genetics {
             //Czym są geny w tym brainie???? (moze wagi na neuronach)
             //Gdzie zrobic cut????
             //Zamien inty w cut na floaty i zamien je pozniej na int
-            Double lowerHalf = Math.floor((double) brain1.getPerceptronCount() / 2 / 2);
+            Double lowerHalf = Math.floor((double) brain1.getPerceptronCount() / 2);
             Double upperHalf = Math.ceil((double) brain2.getPerceptronCount() / 2);
             int cut = ThreadLocalRandom.current().nextInt(1, lowerHalf.intValue());
             int cut2 = ThreadLocalRandom.current().nextInt(1, upperHalf.intValue());
@@ -117,7 +117,7 @@ public class Genetics {
         getGenePool().clear();
         //krzyzowanie
         int[] a = new int[population];
-        for (int i = 0; i < 49; i++) {
+        for (int i = 0; i < (population-2)/2; i++) {
             Brain brain1 = parents.get(0);
             Brain brain2 = parents.get(1);
             Brain child1 = new Brain();
@@ -212,7 +212,7 @@ public class Genetics {
     }
 
     public List<Brain> getTwoFittest(){
-        List<Brain> sorted = getGenePool().stream().sorted(Comparator.comparing(Brain::getScore)).collect(Collectors.toList());
+        List<Brain> sorted = getGenePool().stream().sorted(Comparator.comparing(Brain::getScore).reversed()).collect(Collectors.toList());
         /*for (int i = 0; i < sorted.size(); i++) {
             System.out.println(sorted.get(i).getScore());
         }*/

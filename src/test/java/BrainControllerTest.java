@@ -8,6 +8,7 @@ import org.junit.runners.JUnit4;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
+import java.util.concurrent.ThreadLocalRandom;
 
 @RunWith(JUnit4.class)
 public class BrainControllerTest {
@@ -54,6 +55,42 @@ public class BrainControllerTest {
         System.out.println(0.432f * 0f * (1 + Math.exp(0)));
         System.out.println(1 + Math.exp(0));
         System.out.println(1 - Math.exp(-0) / (1 + Math.exp(0)));
+    }
+    @Test
+    public void activationTest(){
+        Integer[][] map = new Integer[4][4];
+        for (int i = 0; i < 4; i++) {
+            for (int j = 0; j < 4; j++) {
+                map[i][j] = ThreadLocalRandom.current().nextInt(0,1024);
+            }
+        }
+        brainController = new BrainController();
+        //brainController.setBrain(new Brain());
+        //brainController.getBrain().createDefaultPerceptronMap();
+        List<Float> lp = new ArrayList<>();
+        List<Float> tlp = new ArrayList<>();
+        brainController.activateAll();
+        Multimap<Integer, Multimap<Integer, Perceptron>> temp = brainController.getBrain().getPerceptronMap();
+        for(Multimap<Integer,Perceptron> mp : brainController.getBrain().getPerceptronMap().values()){
+            for(Perceptron p : mp.values()){
+                if(mp.size()==8){
+                    lp.add(p.getOutput());
+                    //System.out.println(p.getOutput());
+                }
+            }
+        }
+        System.out.println(brainController.getBrain().getPerceptronMap().size());
+        brainController.setCurrentInputs(map);
+        brainController.activateAll();
+        for(Multimap<Integer,Perceptron> mp : brainController.getBrain().getPerceptronMap().values()){
+            for(Perceptron p : mp.values()){
+                if(mp.size()==8){
+                    tlp.add(p.getOutput());
+                    //System.out.println(p.getOutput());
+                }
+            }
+        }
+        Assert.assertNotEquals(lp,tlp);
     }
 
     public Brain createBrain() {

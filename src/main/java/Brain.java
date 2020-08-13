@@ -4,14 +4,17 @@ import java.util.*;
 import java.util.concurrent.ThreadLocalRandom;
 import java.util.stream.Collectors;
 
+//TODO: Ja cie pierdole, to w ogole nie dziala ale zaraz cos rozkurwie o sciane, we to napraw Daniel do kurwy nedzy no.
 public class Brain implements Comparable<Brain>{
     private Integer lp;
     private Integer score;
     private Integer fitness;
     private Float pc;
     private Multimap<Integer, Multimap<Integer, Perceptron>> perceptronMap;
+    private int moves;
 
     public Brain() {
+        moves = 0;
         lp = 0;
         score = 0;
         fitness = 0;
@@ -37,6 +40,9 @@ public class Brain implements Comparable<Brain>{
 
     public Integer getPerceptronCount() {
         Integer count = 0;
+        while(getPerceptronMap().values()==null || getPerceptronMap()==null){
+            System.out.println("AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA");
+        }
         for (Multimap<Integer, Perceptron> m : getPerceptronMap().values()) {
             for (Perceptron p : m.values()) {
                 count++;
@@ -132,9 +138,25 @@ public class Brain implements Comparable<Brain>{
         }*/
     }
 
+    public void updatePerceptronValues(){
+        for (int i = 0; i < getPerceptronMap().values().size(); i++) {
+            for (int j = 0; j < getPerceptronMap().get(i).size(); j++) {
+                if(i!=0){
+                    for (Perceptron p : getPerceptronMap().get(i).stream().findFirst().get().values()) {
+                        int index = 0;
+                        for (Perceptron pp : getPerceptronMap().get(i-1).stream().findFirst().get().values()) {
+                            p.replacePerceptronValue(index,pp.getOutput());
+                            index++;
+                        }
+                    }
+                }
+            }
+        }
+    }
+
     public void createDefaultPerceptronMap() {
         List<Integer> rows = new ArrayList<>();
-        rows.add(16);
+        rows.add(16); //16-20 bloki up,right,down,left
         rows.add(8);
         rows.add(4);
         rows.add(4);
@@ -144,9 +166,11 @@ public class Brain implements Comparable<Brain>{
             for (int l = 0; l < rows.get(k); l++) {
                 Perceptron p = new Perceptron();
                 if (k == 0) {
-                    Float weight = ThreadLocalRandom.current().nextFloat();
-                    Float value = ThreadLocalRandom.current().nextFloat();
-                    p.getInputs().put(weight, value);
+                    for (int i = 0; i < rows.get(0); i++) {
+                        Float weight = ThreadLocalRandom.current().nextFloat();
+                        Float value = ThreadLocalRandom.current().nextFloat();
+                        p.getInputs().put(weight, value);
+                    }
                 } else {
                     for (Perceptron pp : getGivenLayer(k - 1).values()) {
                         Float weight = ThreadLocalRandom.current().nextFloat();
@@ -207,5 +231,13 @@ public class Brain implements Comparable<Brain>{
         }else {
             return getScore().compareTo(o.getScore());
         }
+    }
+
+    public int getMoves() {
+        return moves;
+    }
+
+    public void setMoves(int moves) {
+        this.moves = moves;
     }
 }

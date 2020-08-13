@@ -1,4 +1,5 @@
 import com.google.common.collect.Multimap;
+import com.google.common.collect.Multimaps;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -45,7 +46,16 @@ public class Test {
         }*/
         //Float output = Math.max(0, -15f);
         //double output = 1/(1+Math.exp(-64));
-        float output = 0.0000000001f;
-        System.out.println(output);
+        /*Brain brain = new Brain();
+        brain.createDefaultPerceptronMap();
+        Multimap<Integer,Perceptron> p = brain.getPerceptronMap().get(0).stream().findFirst().get();
+        Perceptron a = p.get(16).stream().findFirst().get();
+        System.out.println(a.getInputs());*/
+        int a = 0;
+        float b = 14.2f;
+        a =(int) b/2;
+        System.out.println(a);
+        /*float output = 0.0000000001f;
+        System.out.println(output);*/
     }
 }
