@@ -24,17 +24,20 @@ public class Genetics {
     }
 
     public void createOffspring() {
+        getRealFittest();
         //ustawianie PC kazdego osobnika
         for (int i = 0; i < getGenePool().size(); i++) {
-            getGenePool().get(i).setPc(ThreadLocalRandom.current().nextFloat());
+            getGenePool().get(i).setPc(ThreadLocalRandom.current().nextFloat()*getGenePool().get(i).getScore());
         }
         //wybieranie osobnikow do puli c
-        for (int i = 0; i < getGenePool().size(); i++) {
-            if (getGenePool().get(i).getPc() > 0.6f && getPcPool().size() < population) {
-                getPcPool().add(getGenePool().get(i));
-                getGenePool().remove(i);
+        List<Brain> sorted = getGenePool().stream().sorted(Comparator.comparing(Brain::getPc).reversed()).collect(Collectors.toList());
+        for (int i = 0; i < sorted.size()-1; i++) {
+            if (getPcPool().size() < population) {
+                getPcPool().add(sorted.get(i));
+                sorted.remove(i);
             }
         }
+        setGenePool(sorted);
         //uzupelnienie puli do liczby parzystej
         while (getPcPool().size() < population || getPcPool().size() % 2 != 0) {
             int random = ThreadLocalRandom.current().nextInt(0, getGenePool().size());
@@ -42,18 +45,13 @@ public class Genetics {
             getGenePool().remove(random);
         }
         //sprawdzenie czy najlepszy osobnik jest w puli
-        int testt = 0;
-        for (int i = 0; i < getPcPool().size(); i++) {
-            if (getPcPool().get(i).getScore() != best.getScore()) {
-                testt++;
-            }
-            if (testt == getPcPool().size()) {
-                getPcPool().remove(ThreadLocalRandom.current().nextInt(0, getPcPool().size()));
-                getPcPool().add(best);
-            }
+        if(!getPcPool().contains(best)){
+            getPcPool().remove(ThreadLocalRandom.current().nextInt(0, getPcPool().size()));
+            getPcPool().add(best);
         }
         //krzyzowanie
         int[] a = new int[population];
+        System.out.println("rozmiar pc: "+getPcPool().size());
         for (int i = 0; i < getPcPool().size() / 2; i++) {
             int random = ThreadLocalRandom.current().nextInt(0, population);
             if (a[random] == 0) {
@@ -209,6 +207,10 @@ public class Genetics {
         convergence++;
         //System.out.println("best of this gen: "+fit);
         return fit;
+    }
+    public void getRealFittest(){
+        List<Brain> sorted = getGenePool().stream().sorted(Comparator.comparing(Brain::getScore).reversed()).collect(Collectors.toList());
+        best = sorted.get(0);
     }
 
     public List<Brain> getTwoFittest(){

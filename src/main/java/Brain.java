@@ -40,13 +40,14 @@ public class Brain implements Comparable<Brain>{
 
     public Integer getPerceptronCount() {
         Integer count = 0;
-        while(getPerceptronMap().values()==null || getPerceptronMap()==null){
-            System.out.println("AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA");
-        }
-        for (Multimap<Integer, Perceptron> m : getPerceptronMap().values()) {
-            for (Perceptron p : m.values()) {
-                count++;
+        try{
+            for (Multimap<Integer, Perceptron> m : getPerceptronMap().values()) {
+                for (Perceptron p : m.values()) {
+                    count++;
+                }
             }
+        }catch (NullPointerException e){
+            e.printStackTrace();
         }
         return count;
     }

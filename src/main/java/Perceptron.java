@@ -22,7 +22,8 @@ public class Perceptron {
         //Float out = Math.max(0, calculateSum());
         Float lambda = 1.0507f;
         Float alpha = 1.6732f;
-        if(calculateSum()<0){
+        calculateSum();
+        if(sum<0){
             Double a = (alpha*Math.exp(sum)-alpha)*lambda;
             return output = a.floatValue();
         }else{
@@ -30,9 +31,14 @@ public class Perceptron {
         }
     }
 
+    public int log2(float value){
+        return (int) (Math.log(value)/Math.log(2)+1e-10);
+    }
+
     public Float calculateSum() {
         sum = 0f;
-        inputs.entries().forEach(entry -> sum += entry.getKey() * (entry.getValue()*0.001f));
+        inputs.entries().forEach(entry -> sum += entry.getKey() * (log2(entry.getValue())*0.01f));
+        System.out.println(sum);
         return sum;
     }
 

@@ -76,14 +76,7 @@ public class BrainController {
 
     public void activateAll(){
         for (Multimap<Integer, Perceptron> mp : brain.getPerceptronMap().values()){
-            //System.out.println(mp.size());
             for (Perceptron p : mp.values()){
-                /*if(mp.size()==8){
-                    System.out.println(p.getInputs());
-                    System.out.println(p.getWeights());
-                    System.out.println(p.getOutput());
-                    System.out.println("-----------");
-                }*/
                 p.activation();
             }
         }
@@ -97,7 +90,7 @@ public class BrainController {
         int i = 0;
         for (Perceptron p : brain.getGivenLayer(0).values()) {
             //if(i<16)
-            p.replacePerceptronValue(0, list.get(i).floatValue());
+            p.replacePerceptronValue(0, list.get(i).floatValue()*0.0001f);
             i++;
         }
         activateAll();

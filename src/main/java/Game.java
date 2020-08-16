@@ -357,7 +357,7 @@ public class Game extends Application {
                     brainController.setCurrentInputs(gameMatrix);
                     brainController.getBlocks().clear();
                 }
-                //brainController.setCurrentInputs(gameMatrix);
+                brainController.setCurrentInputs(gameMatrix);
                 //values();
                 moved = false;
             } else if (!moved && automation) {
