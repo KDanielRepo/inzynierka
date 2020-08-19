@@ -42,36 +42,30 @@ public class BrainController {
         return move;
     }
 
-    public Integer generateMoveWithoutBlocks() {
+    public Integer generateMoveWithoutBlocks(){
         List<Float> floats = new ArrayList<>(brain.getOutputLayer().values());
         floats.sort(Comparator.naturalOrder());
 
+        List<Integer> avMoves = new ArrayList<>();
         Integer move = -1;
-        for (int j = floats.size() - 1; j > 0; j--) {
-            int finalJ = j;
+        for (int i = floats.size()-1; i >=0 ; i--) {
+            int finalI = i;
             move = Integer.parseInt(brain.getOutputLayer()
                     .entries()
                     .stream()
-                    .filter(entry -> floats.get(finalJ).equals(entry.getValue()))
+                    .filter(entry -> floats.get(finalI).equals(entry.getValue()))
                     .map(Map.Entry::getKey)
                     .findFirst()
                     .toString()
                     .replaceAll("[\\[\\]a-z,A-Z]", ""));
-            for (Integer anI : blocks) {
-                if (move == anI) {
-                    floats.remove(j);
-                }
-            }
+            avMoves.add(move);
         }
-        move = Integer.parseInt(brain.getOutputLayer()
-                .entries()
-                .stream()
-                .filter(entry -> floats.get(floats.size() - 1).equals(entry.getValue()))
-                .map(Map.Entry::getKey)
-                .findFirst()
-                .toString()
-                .replaceAll("[\\[\\]a-z,A-Z]", ""));
-        return move;
+        blocks.stream().distinct().forEach(e->{
+            if(avMoves.contains(e)){
+                avMoves.remove(e);
+            }
+        });
+        return avMoves.get(0);
     }
 
     public void activateAll(){
@@ -90,10 +84,12 @@ public class BrainController {
         int i = 0;
         for (Perceptron p : brain.getGivenLayer(0).values()) {
             //if(i<16)
-            p.replacePerceptronValue(0, list.get(i).floatValue()*0.0001f);
+            for (int k = 0; k < brain.getGivenLayer(0).size(); k++) {
+                p.replacePerceptronValue(k, list.get(k).floatValue());
+            }
             i++;
         }
-        activateAll();
+        //activateAll();
         brain.updatePerceptronValues();
     }
 

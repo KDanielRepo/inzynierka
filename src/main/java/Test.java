@@ -2,6 +2,7 @@ import com.google.common.collect.Multimap;
 import com.google.common.collect.Multimaps;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 
 public class Test {
@@ -51,11 +52,25 @@ public class Test {
         Multimap<Integer,Perceptron> p = brain.getPerceptronMap().get(0).stream().findFirst().get();
         Perceptron a = p.get(16).stream().findFirst().get();
         System.out.println(a.getInputs());*/
-        int a = 0;
-        float b = 14.2f;
-        a =(int) b/2;
-        System.out.println(a);
-        /*float output = 0.0000000001f;
-        System.out.println(output);*/
+
+        List<Integer> a = Arrays.asList(1,2,3);
+        List<Integer> b = new ArrayList<>();
+        b.add(1);
+        b.add(2);
+        b.add(3);
+        /*a.stream().forEach(e->{
+            System.out.println(e);
+        });
+        for (int i = 0; i < a.size(); i++) {
+            a.remove(i);
+        }
+        System.out.println(a.size());*/
+
+        b.stream().forEach(e->{
+            System.out.println(e);
+        });
+        b.clear();
+        System.out.println(b.size());
+
     }
 }

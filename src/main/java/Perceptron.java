@@ -1,17 +1,15 @@
-import com.google.common.base.Predicate;
 import com.google.common.collect.HashMultimap;
 import com.google.common.collect.Iterables;
 import com.google.common.collect.Multimap;
 
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
 import java.util.stream.Collectors;
 
 public class Perceptron {
     private Multimap<Float, Float> inputs;
     private Float output;
     private Float sum;
+    private int layer;
 
     public Perceptron() {
         inputs = HashMultimap.create();
@@ -31,21 +29,26 @@ public class Perceptron {
         }
     }
 
-    public int log2(float value){
-        return (int) (Math.log(value)/Math.log(2)+1e-10);
+    public int log2(Float value){
+        if(value==0f){
+            return 0;
+        }
+        Double a = (Math.log(value)/Math.log(2)+1e-10);
+        return a.intValue();
     }
 
     public Float calculateSum() {
         sum = 0f;
-        inputs.entries().forEach(entry -> sum += entry.getKey() * (log2(entry.getValue())*0.01f));
-        System.out.println(sum);
+        if(layer == 0){
+            inputs.entries().forEach(entry -> sum += (entry.getKey() * (log2(entry.getValue())*0.01f)));
+        }else{
+            inputs.entries().forEach(entry -> sum += (entry.getKey() * entry.getValue()));
+        }
         return sum;
     }
 
     public Float getOutput() {
-        if (output == null) {
-            activation();
-        }
+        activation();
         return output;
     }
 
@@ -53,12 +56,6 @@ public class Perceptron {
         this.output = output;
     }
 
-    //To musi zwracac mape <F,F>
-    /*public Map<Float,Float> getOutput(Integer i){
-        Map<Float,Float> out = new HashMap<>();
-        out.put(Iterables.get(outputs.keys(),i),Iterables.get(outputs.values(),i));
-        return out;
-    }*/
     public Float getInput(Integer i) {
         return Iterables.get(inputs.values(), i);
     }
@@ -119,5 +116,13 @@ public class Perceptron {
             output = Iterables.get(tempMap.values(), 0);
         }
         inputs = tempMap;
+    }
+
+    public int getLayer() {
+        return layer;
+    }
+
+    public void setLayer(int layer) {
+        this.layer = layer;
     }
 }

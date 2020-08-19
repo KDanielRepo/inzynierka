@@ -12,9 +12,11 @@ public class Genetics {
     private Brain best;
     private int population;
     private int generation;
+    private List<Brain> bestBrains;
 
     public Genetics() {
         best = new Brain();
+        bestBrains = new ArrayList<>();
         population = 200;
         generation = 500;
     }
@@ -27,11 +29,11 @@ public class Genetics {
         getRealFittest();
         //ustawianie PC kazdego osobnika
         for (int i = 0; i < getGenePool().size(); i++) {
-            getGenePool().get(i).setPc(ThreadLocalRandom.current().nextFloat()*getGenePool().get(i).getScore());
+            getGenePool().get(i).setPc(ThreadLocalRandom.current().nextFloat() * getGenePool().get(i).getScore());
         }
         //wybieranie osobnikow do puli c
         List<Brain> sorted = getGenePool().stream().sorted(Comparator.comparing(Brain::getPc).reversed()).collect(Collectors.toList());
-        for (int i = 0; i < sorted.size()-1; i++) {
+        for (int i = 0; i < sorted.size() - 1; i++) {
             if (getPcPool().size() < population) {
                 getPcPool().add(sorted.get(i));
                 sorted.remove(i);
@@ -45,13 +47,13 @@ public class Genetics {
             getGenePool().remove(random);
         }
         //sprawdzenie czy najlepszy osobnik jest w puli
-        if(!getPcPool().contains(best)){
+        if (!getPcPool().contains(best)) {
             getPcPool().remove(ThreadLocalRandom.current().nextInt(0, getPcPool().size()));
             getPcPool().add(best);
         }
         //krzyzowanie
         int[] a = new int[population];
-        System.out.println("rozmiar pc: "+getPcPool().size());
+        System.out.println("rozmiar pc: " + getPcPool().size());
         for (int i = 0; i < getPcPool().size() / 2; i++) {
             int random = ThreadLocalRandom.current().nextInt(0, population);
             if (a[random] == 0) {
@@ -106,16 +108,17 @@ public class Genetics {
         }
     }
 
-    public void createOffspringNew(){
+    public void createOffspringNew() {
         //ustawianie PC kazdego osobnika
         for (int i = 0; i < getGenePool().size(); i++) {
             getGenePool().get(i).setPc(ThreadLocalRandom.current().nextFloat());
         }
-        List<Brain> parents = getTwoFittest();
+        getTwoFittest();
+        List<Brain> parents = bestBrains;
         getGenePool().clear();
         //krzyzowanie
         int[] a = new int[population];
-        for (int i = 0; i < (population-2)/2; i++) {
+        for (int i = 0; i < (population - 2) / 2; i++) {
             Brain brain1 = parents.get(0);
             Brain brain2 = parents.get(1);
             Brain child1 = new Brain();
@@ -174,7 +177,7 @@ public class Genetics {
         for (int i = 0; i < getGenePool().size(); i++) {
             sum += getGenePool().get(i).getScore();
         }
-        System.out.println("Srednia to: " + sum/population);
+        System.out.println("Srednia to: " + sum / population);
         //System.out.println(sum/getGenePool().size());
     }
 
@@ -208,22 +211,33 @@ public class Genetics {
         //System.out.println("best of this gen: "+fit);
         return fit;
     }
-    public void getRealFittest(){
+
+    public void getRealFittest() {
         List<Brain> sorted = getGenePool().stream().sorted(Comparator.comparing(Brain::getScore).reversed()).collect(Collectors.toList());
         best = sorted.get(0);
     }
 
-    public List<Brain> getTwoFittest(){
+    public void getTwoFittest() {
         List<Brain> sorted = getGenePool().stream().sorted(Comparator.comparing(Brain::getScore).reversed()).collect(Collectors.toList());
         /*for (int i = 0; i < sorted.size(); i++) {
             System.out.println(sorted.get(i).getScore());
         }*/
         List<Brain> best = new ArrayList<>();
         best.add(sorted.get(0));
-        System.out.println("Najlepszy: "+best.get(0).getScore());
+        System.out.println("Najlepszy: " + best.get(0).getScore());
         best.add(sorted.get(1));
-        System.out.println("Drugi najlepszy: "+best.get(1).getScore());
-        return best;
+        System.out.println("Drugi najlepszy: " + best.get(1).getScore());
+        if (bestBrains.size() == 0) {
+            bestBrains = best;
+        }
+        for (int i = 1; i >= 0; i--) {
+            for (int j = 1; j >= 0; j--) {
+                if (best.get(i).getScore() > bestBrains.get(j).getScore()) {
+                    bestBrains.remove(j);
+                    bestBrains.add(best.get(i));
+                }
+            }
+        }
     }
 
 

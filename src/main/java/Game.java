@@ -1,27 +1,25 @@
+import com.google.common.collect.Iterables;
 import javafx.application.Application;
 import javafx.event.EventHandler;
-import javafx.event.EventType;
-import javafx.scene.Group;
 import javafx.scene.Scene;
 import javafx.scene.canvas.Canvas;
 import javafx.scene.canvas.GraphicsContext;
+import javafx.scene.control.*;
 import javafx.scene.control.Button;
 import javafx.scene.control.Label;
 import javafx.scene.control.TextArea;
 import javafx.scene.control.TextField;
-import javafx.scene.input.KeyCode;
 import javafx.scene.input.KeyEvent;
 import javafx.scene.layout.BorderPane;
 import javafx.scene.layout.GridPane;
+import javafx.scene.layout.HBox;
 import javafx.scene.layout.VBox;
 import javafx.scene.paint.Color;
-import javafx.scene.paint.Paint;
 import javafx.stage.Stage;
 
 import java.awt.*;
-import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.concurrent.ThreadLocalRandom;
+import java.util.concurrent.atomic.AtomicInteger;
 
 public class Game extends Application {
     private Integer[][] gameMatrix = new Integer[4][4];
@@ -48,10 +46,17 @@ public class Game extends Application {
     private boolean multipleTries;
     private boolean visual;
 
-    //vizualizacja
+    //wizualizacja
     private GraphicsContext gc;
     private Stage neuralNetworkStage;
     private Canvas canvas;
+
+    //debug menu
+    private Stage debugStage;
+    private GraphicsContext debugGc;
+    private Canvas debugCanvas;
+    private Canvas generalInfo;
+    private GraphicsContext generalInfoGC;
 
     @Override
     public void start(Stage primaryStage) throws Exception {
@@ -174,21 +179,30 @@ public class Game extends Application {
                 multipleTriesButton.setText("Single Try");
             }
         });
+        Button visualizeButton = new Button("Show net visualization");
+        visualizeButton.setOnAction(e->{
+            visualizeNeuralNetwork();
+            updateNeuralNetworkVisualization();
+        });
+        Button debugMenuButton = new Button("Show debug menu");
+        debugMenuButton.setOnAction(e->{
+            debugMenu();
+        });
 
-        toolBox.getChildren().addAll(pause, restart, nextMove, automatic, scoreBoard, timerLabel, timer, timerButton,visualButton,multipleTriesButton);
+
+        toolBox.getChildren().addAll(pause, restart, nextMove, automatic, scoreBoard, timerLabel, timer, timerButton,visualButton,multipleTriesButton,visualizeButton,debugMenuButton);
         borderPane.setRight(toolBox);
 
         primaryStage.setScene(scene);
         primaryStage.setX(0);
         primaryStage.setY(0);
         primaryStage.show();
-        visualizeNeuralNetwork();
+        brainController.setCurrentInputs(gameMatrix);
     }
 
     public void visualizeNeuralNetwork(){
         neuralNetworkStage = new Stage();
-        neuralNetworkStage.setMinWidth(600);
-        neuralNetworkStage.setMinHeight(600);
+        neuralNetworkStage.setTitle("Visualization");
 
         BorderPane borderPane = new BorderPane();
         Scene neuralNetworkScene = new Scene(borderPane);
@@ -242,12 +256,93 @@ public class Game extends Application {
                     }
                     gc.setStroke(Color.BLACK);
                     gc.strokeOval(canvas.getWidth()/layer*i-neuronWidth,canvas.getHeight()/divisionSize*j,neuronWidth,neuronHeight);
-                    gc.strokeText(brainController.getBrain().getPerceptronMap().get(i-1).stream().findFirst().get().get(j).stream().findFirst().get().getOutput().toString(),canvas.getWidth()/layer*i-neuronWidth,canvas.getHeight()/divisionSize*j+neuronHeight/2);
+                    gc.strokeText(brainController.getBrain().getPerceptronMap().get(i-1).stream().findFirst().get().get(j).stream().findFirst().get().getOutput().toString().substring(0,4),canvas.getWidth()/layer*i-neuronWidth,canvas.getHeight()/divisionSize*j+neuronHeight/2);
                     //System.out.println("input: "+brainController.getBrain().getPerceptronMap().get(i-1).stream().findFirst().get().get(j).stream().findFirst().get().getInput(0).toString());
                     //System.out.println(brainController.getBrain().getPerceptronMap().get(i-1).stream().findFirst().get().get(j).stream().findFirst().get().getOutput().toString());
                 }
                 //System.out.println("---------------------");
             }
+        }
+    }
+    public void debugMenu(){
+        debugStage = new Stage();
+        debugCanvas = new Canvas(300,600);
+        debugGc = debugCanvas.getGraphicsContext2D();
+        debugGc.setStroke(Color.BLACK);
+        debugGc.setLineWidth(1f);
+
+        generalInfo = new Canvas(200,600);
+        generalInfoGC = generalInfo.getGraphicsContext2D();
+
+        BorderPane borderPane = new BorderPane();
+        Scene scene = new Scene(borderPane);
+
+        HBox hBox = new HBox();
+        RadioButton[] radioButtons = new RadioButton[brainController.getBrain().getPerceptronMap().size()];
+        ToggleGroup group = new ToggleGroup();
+        for (int i = 0; i <radioButtons.length; i++) {
+            RadioButton radioButton = new RadioButton("layer "+i);
+            radioButton.setToggleGroup(group);
+            hBox.getChildren().add(radioButton);
+            radioButtons[i] = radioButton;
+        }
+        Button showSelectedWeights = new Button("show selected weights");
+        showSelectedWeights.setOnAction(e->{
+            clearDebugMenuCanvas();
+            for (int i = 0; i <radioButtons.length ; i++) {
+                if(radioButtons[i].isSelected()){
+                    int finalI = i;
+                    AtomicInteger index = new AtomicInteger();
+                    brainController.getBrain().getPerceptronMap().get(i).stream().findFirst().get().values().forEach(o->{
+                            debugGc.strokeText("Waga nr. "+index+" to: "+ o.getWeights().get(index.get()).toString().substring(0,4),debugCanvas.getWidth()/2,debugCanvas.getHeight()/brainController.getBrain().getPerceptronMap().get(finalI).stream().findFirst().get().values().size()*index.get()+debugGc.getFont().getSize());
+                            index.getAndIncrement();
+                    });
+                }
+            }
+        });
+
+        VBox toolbox = new VBox();
+        toolbox.getChildren().addAll(hBox,showSelectedWeights);
+        borderPane.setRight(toolbox);
+        borderPane.setCenter(debugCanvas);
+        borderPane.setLeft(generalInfo);
+        debugStage.setScene(scene);
+        debugStage.setTitle("Debug menu");
+        debugStage.show();
+    }
+    public void clearDebugMenuCanvas(){
+        debugGc.clearRect(0,0,debugCanvas.getWidth(),debugCanvas.getHeight());
+        debugGc.setStroke(Color.BLACK);
+        debugGc.setLineWidth(1f);
+    }
+    public void updateGeneralInfo(){
+        generalInfoGC.clearRect(0,0,generalInfo.getWidth(),generalInfo.getHeight());
+        generalInfoGC.setStroke(Color.BLACK);
+        generalInfoGC.setLineWidth(1f);
+        double height = generalInfoGC.getFont().getSize();
+        generalInfoGC.strokeText("Lista bloków: ",0,height);
+        for (int i = 0; i < brainController.getBlocks().size(); i++) {
+            generalInfoGC.strokeText(brainController.getBlocks().get(i).toString(),0,height*(2+i));
+        }
+        generalInfoGC.strokeText("Wartości na wyjściach: ",0,height*7);
+        for (int i = 0; i < brainController.getBrain().getOutputLayer().size(); i++) {
+            String pre = "";
+            switch (i){
+                case 0:
+                    pre = "góra: ";
+                    break;
+                case 1:
+                    pre = "prawo: ";
+                    break;
+                case 2:
+                    pre = "dół: ";
+                    break;
+                case 3:
+                    pre = "lewo: ";
+                    break;
+            }
+            String middle = Iterables.get(brainController.getBrain().getOutputLayer().values(),i).toString();
+            generalInfoGC.strokeText(pre+middle,0,height*(8+i));
         }
     }
 
@@ -351,17 +446,23 @@ public class Game extends Application {
                 if(!visual){
                     updateGameArea();
                 }
-
+                updateGeneralInfo();
                 checkGameOver();
-                if (automation) {
+                //if (automation) {
                     brainController.setCurrentInputs(gameMatrix);
                     brainController.getBlocks().clear();
-                }
-                brainController.setCurrentInputs(gameMatrix);
+                //System.out.println(" ");
+                //}
+                //brainController.setCurrentInputs(gameMatrix);
                 //values();
                 moved = false;
             } else if (!moved && automation) {
-                brainController.addBlock(brainController.getCurrentMove());
+                if(!brainController.getBlocks().contains(brainController.getCurrentMove())){
+                    brainController.addBlock(brainController.getCurrentMove());
+                    if(brainController.getBlocks().size()==4){
+                        brainController.getBlocks().clear();
+                    }
+                }
                 if(!visual){
                     mutex.unlock(delay);
                 }
@@ -370,7 +471,6 @@ public class Game extends Application {
             tries++;
             System.out.println(score);
             restart();
-            //index++;
             if (index < genetics.getPopulation()) {
                 update();
             } else {
@@ -382,7 +482,7 @@ public class Game extends Application {
                 genetics.calculateGlobalFitness();
                 genetics.calculateRFitness();
                 //genetics.getFittest();
-                genetics.createOffspring();
+                genetics.createOffspringNew();
                 genetics.resetPcPool();
                 //after();
                 index = 0;
@@ -596,6 +696,7 @@ public class Game extends Application {
     }
 
     public void restart() {
+        brainController.getBlocks().clear();
         if(multipleTries){
             if(tries<10 && automation){
                 brainController.getBrain().setScore(brainController.getBrain().getScore()+score);
@@ -649,11 +750,12 @@ public class Game extends Application {
         if(!visual){
             updateGameArea();
         }
-
+        updateGeneralInfo();
         random(2);
         if(!visual){
             updateGameArea();
         }
+        brainController.setCurrentInputs(gameMatrix);
     }
 
     public void simulateKeyPress(int i) {
