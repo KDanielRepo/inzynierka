@@ -1,76 +1,107 @@
-import com.google.common.collect.Multimap;
-import com.google.common.collect.Multimaps;
+import javafx.application.Application;
+import javafx.scene.Scene;
+import javafx.scene.input.KeyCode;
+import javafx.scene.input.KeyEvent;
+import javafx.scene.layout.BorderPane;
+import javafx.stage.Stage;
 
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.List;
+import java.util.concurrent.ThreadLocalRandom;
 
-public class Test {
-    public static void main(String[] args) {
-        /*Perceptron p = new Perceptron();
-        p.getInputs().put(-0.5f,4f);
-
-        Perceptron p1 = new Perceptron();
-        p1.getInputs().put(-0.3f,8f);
-
-        Perceptron p2 = new Perceptron();
-        p2.getInputs().put(-0.5f,p.getOutput());
-        p2.getInputs().put(0.5f,p1.getOutput());
-        System.out.println(p2.activation());*/
-        /*Brain brain = new Brain();
-        List<Integer> list = new ArrayList<>();
-        list.add(16);
-        list.add(4);
-        brain.createPerceptronMap(2,list);
-        brain.getPerceptronMap().values().stream().forEach(m ->{
-            System.out.println("Rozmiar warstwy: "+m.values().size());
-            m.values().stream().forEach(o ->{
-                Perceptron p = (Perceptron) o;
-                o.getInputs().values().stream().forEach(e ->{
-                    System.out.println("Wartość na wejsciu: "+e.toString());
-                });
-                System.out.println("Wartość na wyjściu: "+o.getOutput());
-                System.out.println("Wartość aktywacji to: "+o.activation());
-                System.out.println("++++++++++++++++++++++++++");
-            });
-            System.out.println("________________________________");
-        });*/
-        /*Float sum = 10f;
-        Float lambda = 1.0507f;
-        Float alpha = 1.6732f;
-        Float output = 0f;
-        if(sum<0){
-            Double a = (alpha*Math.exp(sum)-alpha)*lambda;
-            output = a.floatValue();
-        }else{
-            output = sum * lambda;
-        }*/
-        //Float output = Math.max(0, -15f);
-        //double output = 1/(1+Math.exp(-64));
-        /*Brain brain = new Brain();
-        brain.createDefaultPerceptronMap();
-        Multimap<Integer,Perceptron> p = brain.getPerceptronMap().get(0).stream().findFirst().get();
-        Perceptron a = p.get(16).stream().findFirst().get();
-        System.out.println(a.getInputs());*/
-
-        List<Integer> a = Arrays.asList(1,2,3);
-        List<Integer> b = new ArrayList<>();
-        b.add(1);
-        b.add(2);
-        b.add(3);
-        /*a.stream().forEach(e->{
-            System.out.println(e);
+public class Test extends Application {
+    Scene scene;
+    @Override
+    public void start(Stage primaryStage) throws Exception {
+        scene = new Scene(new BorderPane());
+        scene.setOnKeyPressed(e->{
+            switch (e.getCode()){
+                case D:
+                    System.out.println("nacislem R");
+                    break;
+                case A:
+                    System.out.println("nacislem L");
+                    break;
+                case S:
+                    System.out.println("nacislem D");
+                    break;
+                case W:
+                    System.out.println("nacislem U");
+                    break;
+            }
         });
-        for (int i = 0; i < a.size(); i++) {
-            a.remove(i);
+        scene.setOnKeyReleased(e->{
+            switch (e.getCode()){
+                case D:
+                    System.out.println("puscilem R");
+                    break;
+                case A:
+                    System.out.println("puscilem L");
+                    break;
+                case S:
+                    System.out.println("puscilem D");
+                    break;
+                case W:
+                    System.out.println("puscilem U");
+                    break;
+            }
+        });
+        primaryStage.setScene(scene);
+        primaryStage.show();
+        test();
+        test();
+        test();
+    }
+    public void test(){
+        Integer a = ThreadLocalRandom.current().nextInt(0,4);
+        boolean up,left,down,right;
+        up = false;
+        left = false;
+        down = false;
+        right = false;
+        switch (a){
+            case 0:
+                up = true;
+                break;
+            case 1:
+                right = true;
+                break;
+            case 2:
+                down = true;
+                break;
+            case 3:
+                left = true;
+                break;
         }
-        System.out.println(a.size());*/
+        if(up){
+            KeyEvent ke = new KeyEvent(KeyEvent.KEY_PRESSED,
+                    "w", "",
+                    KeyCode.W, false, false, false, false);
+            KeyEvent.fireEvent(scene,ke);
+        }
+        if(left){
+            KeyEvent ke = new KeyEvent(KeyEvent.KEY_PRESSED,
+                    "a", "",
+                    KeyCode.A, false, false, false, false);
+            KeyEvent.fireEvent(scene,ke);
+        }
+        if(right){
+            KeyEvent ke = new KeyEvent(KeyEvent.KEY_PRESSED,
+                    "d", "",
+                    KeyCode.D, false, false, false, false);
+            KeyEvent.fireEvent(scene,ke);
+        }
+        if(down){
+            KeyEvent ke = new KeyEvent(KeyEvent.KEY_PRESSED,
+                    "s", "",
+                    KeyCode.S, false, false, false, false);
+            KeyEvent.fireEvent(scene,ke);
+        }
+        up = false;
+        left = false;
+        down = false;
+        right = false;
+    }
 
-        b.stream().forEach(e->{
-            System.out.println(e);
-        });
-        b.clear();
-        System.out.println(b.size());
-
+    public static void main(String[] args) {
+        launch(Test.class,args);
     }
 }

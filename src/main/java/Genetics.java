@@ -13,6 +13,7 @@ public class Genetics {
     private int population;
     private int generation;
     private List<Brain> bestBrains;
+    private Mutex mutex;
 
     public Genetics() {
         best = new Brain();
@@ -250,7 +251,15 @@ public class Genetics {
     }
 
     public List<Brain> getGenePool() {
-        return genePool;
+        try{
+            mutex.lock();
+            return genePool;
+        }catch (Exception e){
+
+        }finally {
+            mutex.unlock();
+        }
+        return null;
     }
 
     public void setGenePool(List<Brain> genePool) {
@@ -287,5 +296,13 @@ public class Genetics {
 
     public void setGeneration(int generation) {
         this.generation = generation;
+    }
+
+    public Mutex getMutex() {
+        return mutex;
+    }
+
+    public void setMutex(Mutex mutex) {
+        this.mutex = mutex;
     }
 }

@@ -22,17 +22,18 @@ import java.util.concurrent.ThreadLocalRandom;
 import java.util.concurrent.atomic.AtomicInteger;
 
 public class Game extends Application {
+    //game variables
     private Integer[][] gameMatrix = new Integer[4][4];
+    private Integer score;
+    private BrainController brainController;
+
     private TextArea[][] gameArea = new TextArea[4][4];
-    private Integer randomA, randomB, score;
     private TextField scoreBoard;
     private boolean up, right, down, left, game, paused, automation, moved;
     private GridPane gameGrid;
     private VBox toolBox;
-    private BrainController brainController;
     private Scene scene;
     private Mutex mutex;
-    private Mutex keyMutex;
     private TextField timer;
     private Integer delay;
     private Robot robot;
@@ -60,12 +61,13 @@ public class Game extends Application {
 
     @Override
     public void start(Stage primaryStage) throws Exception {
-        BorderPane borderPane = new BorderPane();
+        //only for instance
         brainController = new BrainController();
+
+        BorderPane borderPane = new BorderPane();
         genetics = new Genetics();
         robot = new Robot();
         mutex = new Mutex();
-        keyMutex = new Mutex();
         gameGrid = new GridPane();
         toolBox = new VBox();
         timer = new TextField();
@@ -74,10 +76,8 @@ public class Game extends Application {
         game = true;
         score = 0;
 
-        setGameMatrix();
         brainController.setCurrentInputs(gameMatrix);
         setGameArea(gameGrid);
-        random(2);
         updateGameArea();
         borderPane.setLeft(gameGrid);
 
@@ -442,7 +442,6 @@ public class Game extends Application {
             }
             if (moved) {
                 moves++;
-                random(1);
                 if(!visual){
                     updateGameArea();
                 }
@@ -500,38 +499,6 @@ public class Game extends Application {
         }
     }
 
-    public void before() {
-        for (int i = 0; i < genetics.getGenePool().size(); i++) {
-            System.out.println("Przed, nr: " + i);
-            genetics.getGenePool().get(i).getPerceptronMap().values().stream().forEach(e -> {
-                e.values().stream().forEach(o -> {
-                    System.out.println(o.getWeights());
-                });
-            });
-            System.out.println("-----------------------------------------");
-        }
-    }
-
-    public void after() {
-        for (int i = 0; i < genetics.getGenePool().size(); i++) {
-            System.out.println("Po, nr: " + i);
-            genetics.getGenePool().get(i).getPerceptronMap().values().stream().forEach(e -> {
-                e.values().stream().forEach(o -> {
-                    System.out.println(o.getWeights());
-                });
-            });
-            System.out.println("-----------------------------------------");
-        }
-    }
-
-    public void values() {
-        brainController.getBrain().getPerceptronMap().values().stream().forEach(e -> {
-            e.values().stream().forEach(o -> {
-                System.out.println(o.getInputs());
-            });
-        });
-    }
-
     public void checkGameOver() {
         int test = 0;
         int test2 = 0;
@@ -574,14 +541,6 @@ public class Game extends Application {
         }
     }
 
-    public void setGameMatrix() {
-        for (int i = 0; i < 4; i++) {
-            for (int j = 0; j < 4; j++) {
-                gameMatrix[i][j] = 0;
-            }
-        }
-    }
-
     public void setGameArea(GridPane gridPane) {
         for (int i = 0; i < 4; i++) {
             for (int j = 0; j < 4; j++) {
@@ -608,91 +567,6 @@ public class Game extends Application {
             mutex.unlock(delay);
         }
         updateNeuralNetworkVisualization();
-    }
-
-    public void random(int times) {
-        for (int k = 0; k < times; k++) {
-            int iteration = 0;
-            randomA = ThreadLocalRandom.current().nextInt(0, 4);
-            randomB = ThreadLocalRandom.current().nextInt(0, 4);
-            for (int i = 0; i < 4; i++) {
-                for (int j = 0; j < 4; j++) {
-                    if (gameMatrix[i][j] > 0) {
-                        iteration++;
-                    }
-                }
-            }
-            if (iteration == 16) {
-                return;
-            }
-            if (gameMatrix[randomA][randomB] != 0) {
-                random(1);
-            }
-            int twoOrFour = ThreadLocalRandom.current().nextInt(0, 4);
-            if (twoOrFour == 3) {
-                gameMatrix[randomA][randomB] = 4;
-            } else {
-                gameMatrix[randomA][randomB] = 2;
-            }
-        }
-    }
-
-    public void calculateScore() {
-        score = 0;
-        for (int i = 0; i < 4; i++) {
-            for (int j = 0; j < 4; j++) {
-                if(gameMatrix[i][j]!=0){
-                    int test = gameMatrix[i][j];
-                    int test2 = 0;
-                    while(test !=1){
-                        test2++;
-                        test = test/2;
-                    }
-                    score += gameMatrix[i][j] * test2;
-                }
-                /*if (j + 1 < 4) {
-                    if ((gameMatrix[i][j]/2 == gameMatrix[i][j+1])) {
-                        score += gameMatrix[i][j] * gameMatrix[i][j + 1];
-                    }
-                }
-                if (j - 1 > 0) {
-                    if ((gameMatrix[i][j] * 2 == gameMatrix[i][j - 1])) {
-                        score += gameMatrix[i][j] * gameMatrix[i][j - 1];
-                    }
-                }
-                if (i + 1 < 4) {
-                    if ((gameMatrix[i][j]/2 == gameMatrix[i+1][j])) {
-                        score += gameMatrix[i + 1][j] * gameMatrix[i][j];
-                    }
-                }
-                if (i - 1 > 0) {
-                    if ((gameMatrix[i][j] * 2 == gameMatrix[i-1][j])) {
-                        score += gameMatrix[i - 1][j] * gameMatrix[i][j];
-                    }
-                }*/
-
-                /*if (i - 1 > 0 && i + 1 < 4 && j - 1 > 0 && j + 1 < 4) {//srodek
-                    score += ((gameMatrix[i][j])+1) * ((gameMatrix[i-1][j])+1) * ((gameMatrix[i+1][j])+1) * ((gameMatrix[i][j-1])+1) * ((gameMatrix[i][j+1])+1);
-                } else if (i - 1 < 0 && i + 1 < 4 && j - 1 < 0 && j + 1 < 4) {//lewy gorny
-                    score += ((gameMatrix[i][j])+1) * ((gameMatrix[i+1][j])+1) * ((gameMatrix[i][j+1])+1);
-                } else if (i - 1 < 0 && i + 1 < 4 && j - 1 > 0 && j + 1 > 4) {//prawy gorny
-                    score += ((gameMatrix[i][j])+1) * ((gameMatrix[i+1][j])+1) * ((gameMatrix[i][j-1])+1);
-                } else if (i - 1 > 0 && i + 1 > 4 && j - 1 < 0 && j + 1 < 4) {//lewy dolny
-                    score += ((gameMatrix[i][j])+1) * ((gameMatrix[i-1][j])+1) * ((gameMatrix[i][j+1])+1);
-                } else if (i - 1 > 0 && i + 1 > 4 && j - 1 > 0 && j + 1 > 4) {//prawy dolny
-                    score += ((gameMatrix[i][j])+1) * ((gameMatrix[i-1][j])+1) * ((gameMatrix[i][j-1])+1);
-                } else if (i - 1 < 0 && i + 1 < 4 && j - 1 > 0 && j + 1 < 4) {//brak gory
-                    score += ((gameMatrix[i][j])+1) * ((gameMatrix[i+1][j])+1) * ((gameMatrix[i][j-1])+1) * ((gameMatrix[i][j+1])+1);
-                } else if (i - 1 > 0 && i + 1 > 4 && j - 1 > 0 && j + 1 < 4) {//brak dolu
-                    score += ((gameMatrix[i][j])+1) * ((gameMatrix[i-1][j])+1) * ((gameMatrix[i][j-1])+1) * ((gameMatrix[i][j+1])+1);
-                } else if (i - 1 > 0 && i + 1 < 4 && j - 1 < 0 && j + 1 < 4) {//brak lewego
-                    score += ((gameMatrix[i][j])+1) * ((gameMatrix[i-1][j])+1) * ((gameMatrix[i+1][j])+1) * ((gameMatrix[i][j+1])+1);
-                } else if (i - 1 > 0 && i + 1 < 4 && j - 1 > 0 && j + 1 > 4) {//brak prawego
-                    score += ((gameMatrix[i][j])+1) * ((gameMatrix[i-1][j])+1) * ((gameMatrix[i+1][j])+1) * ((gameMatrix[i][j-1])+1);
-                }*/
-            }
-        }
-        scoreBoard.setText(score.toString());
     }
 
     public void restart() {
@@ -746,12 +620,10 @@ public class Game extends Application {
         moves = 0;
         score = 0;
         game = true;
-        setGameMatrix();
         if(!visual){
             updateGameArea();
         }
         updateGeneralInfo();
-        random(2);
         if(!visual){
             updateGameArea();
         }
