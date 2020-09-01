@@ -1,12 +1,12 @@
+import java.util.ArrayList;
+import java.util.List;
 import java.util.concurrent.ThreadLocalRandom;
 
 public class GameInstance extends Thread {
     private Integer[][] gameMatrix = new Integer[4][4];
     private Integer randomA, randomB, score;
     private BrainController brainController;
-    private Integer delay;
     private boolean game;
-    private boolean paused;
     private boolean up, left, down, right;
     private boolean moved;
     private Integer tries;
@@ -14,6 +14,7 @@ public class GameInstance extends Thread {
     private boolean groupset;
     private GameView gameView;
     private Integer index;
+    private boolean selectedAsView;
 
     public void setGameView(GameView gameView) {
         this.gameView = gameView;
@@ -21,12 +22,12 @@ public class GameInstance extends Thread {
 
     public GameInstance() {
         brainController = new BrainController();
-        paused = false;
         game = true;
         score = 0;
         setGameMatrix();
         random(2);
         brainController.setCurrentInputs(gameMatrix);
+        selectedAsView = false;
     }
 
     public void run() {
@@ -35,8 +36,16 @@ public class GameInstance extends Thread {
         update();
     }
 
-    public void update() {
-        while(game && !paused) {
+    public synchronized void update() {
+        while(game) {
+            try {
+                while(gameView.isPaused()){
+                    sleep(1);
+                }
+                sleep(gameView.getDelay());
+            } catch (InterruptedException e) {
+                e.printStackTrace();
+            }
             if (brainController.isNotBlocked()) {
                 brainController.setCurrentMove(brainController.generateMove());
             } else {
@@ -133,6 +142,7 @@ public class GameInstance extends Thread {
                 if (!brainController.getBlocks().contains(brainController.getCurrentMove())) {
                     brainController.addBlock(brainController.getCurrentMove());
                     if (brainController.getBlocks().size() == 4) {
+                        System.out.println(this.getName()+" // DEADLOCK");
                         brainController.getBlocks().clear();
                     }
                 }
@@ -141,20 +151,33 @@ public class GameInstance extends Thread {
             left = false;
             down = false;
             right = false;
+            if(selectedAsView){
+                gameView.updateGameArea();
+            }
             checkGameOver();
         }if (!game) {
             tries++;
-            System.out.println(this.getName() + " // " + score);
+            System.out.println(this.getName() + " // " + score+" -- "+index+" / "+genetics.getPopulation()+" tries: "+tries);
             restart();
+            //TODO: Ten update tez rzuca overflow, sproboj naprawic
             if (index < genetics.getPopulation()) {
                 update();
             } else {
-                this.interrupt();
-                /*groupset = true;
-                setGenerationIndex(getGenerationIndex()+1);
-                if (getGenerationIndex() <= genetics.getGeneration()) {
+                gameView.setFinishedInstances(gameView.getFinishedInstances()+1);
+                gameView.startGenetics();
+                while (!genetics.isGroupset() || !genetics.isGenerated()){
+                    try {
+                        this.wait(100);
+                        System.out.println(this.getName()+" // waiting for groupset");
+                    } catch (InterruptedException e) {
+                        e.printStackTrace();
+                    }
+                }
+                if (gameView.getGenerationIndex() < genetics.getGeneration()) {
+                    index = gameView.getIndex();
+                    gameView.setIndex(gameView.getIndex()+1);
                     update();
-                }*/
+                }
             }
         }
     }
@@ -203,11 +226,11 @@ public class GameInstance extends Thread {
 
     public void restart() {
         brainController.getBlocks().clear();
-            if (tries < 10) {
+            if (tries <= 10) {
                 brainController.getBrain().setScore(brainController.getBrain().getScore() + score);
                 brainController.getBrain().setLp(index);
             }
-            if (!groupset && tries == 10) {
+            if (!groupset && tries == 10 && index<=genetics.getPopulation()) {
                 brainController.getBrain().setScore((brainController.getBrain().getScore() + score) / 10);
                 brainController.getBrain().setLp(index);
                 index = gameView.getIndex();
@@ -217,11 +240,11 @@ public class GameInstance extends Thread {
                 brain.createDefaultPerceptronMap();
                 brainController.setBrain(brain);
                 tries = 0;
-            } else if (groupset && tries == 10) {
+            } else if (groupset && tries == 10 && index<=genetics.getPopulation()) {
                 brainController.getBrain().setScore((brainController.getBrain().getScore() + score) / 10);
                 brainController.getBrain().setLp(index);
-                brainController.setBrain(genetics.getGenePool().get(index));
                 index = gameView.getIndex();
+                brainController.setBrain(genetics.getGenePool().get(index));
                 gameView.setIndex(gameView.getIndex()+1);
                 tries = 0;
             }
@@ -230,8 +253,9 @@ public class GameInstance extends Thread {
         setGameMatrix();
         random(2);
         brainController.setCurrentInputs(gameMatrix);
-        //index = gameView.getIndex();
-        System.out.println(this.getName()+" // "+index);
+        if(selectedAsView){
+            gameView.updateGameArea();
+        }
     }
 
     public void setGameMatrix() {
@@ -259,29 +283,32 @@ public class GameInstance extends Thread {
         }
     }
 
-    public void random(int times) {
+    public void random(int times){
+        List<Integer> xSlots = new ArrayList<>();
+        List<Integer> ySlots = new ArrayList<>();
         for (int k = 0; k < times; k++) {
-            int iteration = 0;
-            randomA = ThreadLocalRandom.current().nextInt(0, 4);
-            randomB = ThreadLocalRandom.current().nextInt(0, 4);
             for (int i = 0; i < 4; i++) {
                 for (int j = 0; j < 4; j++) {
-                    if (gameMatrix[i][j] > 0) {
-                        iteration++;
+                    if (gameMatrix[i][j] == 0) {
+                        xSlots.add(i);
+                        ySlots.add(j);
                     }
                 }
             }
-            if (iteration == 16) {
+            if (xSlots.isEmpty()) {
                 return;
             }
-            if (gameMatrix[randomA][randomB] != 0) {
-                random(1);
+            int random = ThreadLocalRandom.current().nextInt(0,xSlots.size());
+            while(gameMatrix[xSlots.get(random)][ySlots.get(random)] != 0) {
+                xSlots.remove(random);
+                ySlots.remove(random);
+                random = ThreadLocalRandom.current().nextInt(0,xSlots.size());
             }
             int twoOrFour = ThreadLocalRandom.current().nextInt(0, 4);
             if (twoOrFour == 3) {
-                gameMatrix[randomA][randomB] = 4;
+                gameMatrix[xSlots.get(random)][ySlots.get(random)] = 4;
             } else {
-                gameMatrix[randomA][randomB] = 2;
+                gameMatrix[xSlots.get(random)][ySlots.get(random)] = 2;
             }
         }
     }
@@ -310,22 +337,6 @@ public class GameInstance extends Thread {
         this.brainController = brainController;
     }
 
-    public Integer getDelay() {
-        return delay;
-    }
-
-    public void setDelay(Integer delay) {
-        this.delay = delay;
-    }
-
-    public boolean isPaused() {
-        return paused;
-    }
-
-    public void setPaused(boolean paused) {
-        this.paused = paused;
-    }
-
     public Integer getTries() {
         return tries;
     }
@@ -348,5 +359,13 @@ public class GameInstance extends Thread {
 
     public void setGroupset(boolean groupset) {
         this.groupset = groupset;
+    }
+
+    public boolean isSelectedAsView() {
+        return selectedAsView;
+    }
+
+    public void setSelectedAsView(boolean selectedAsView) {
+        this.selectedAsView = selectedAsView;
     }
 }

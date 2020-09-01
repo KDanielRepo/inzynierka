@@ -483,7 +483,6 @@ public class Game extends Application {
                 //genetics.getFittest();
                 genetics.createOffspringNew();
                 genetics.resetPcPool();
-                //after();
                 index = 0;
                 generationIndex++;
                 System.out.println("---------------------------");

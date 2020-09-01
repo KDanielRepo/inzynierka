@@ -14,12 +14,15 @@ public class Genetics {
     private int generation;
     private List<Brain> bestBrains;
     private Mutex mutex;
+    private boolean groupset;
+    private boolean generated;
 
     public Genetics() {
         best = new Brain();
         bestBrains = new ArrayList<>();
-        population = 200;
-        generation = 500;
+        population = 100;
+        generation = 50;
+        groupset = false;
     }
 
     public Genetics(int population) {
@@ -149,6 +152,8 @@ public class Genetics {
         }
         getGenePool().add(parents.get(0));
         getGenePool().add(parents.get(1));
+        setGroupset(true);
+        setGenerated(true);
     }
 
     public void resetPcPool() {
@@ -291,11 +296,26 @@ public class Genetics {
     }
 
     public int getGeneration() {
-        return generation;
+        try{
+            mutex.lock();
+            return generation;
+        }catch (Exception e){
+
+        }finally {
+            mutex.unlock();
+        }
+        return 0;
     }
 
     public void setGeneration(int generation) {
-        this.generation = generation;
+        try{
+            mutex.lock();
+            this.generation = generation;
+        }catch (Exception e){
+
+        }finally {
+            mutex.unlock();
+        }
     }
 
     public Mutex getMutex() {
@@ -304,5 +324,51 @@ public class Genetics {
 
     public void setMutex(Mutex mutex) {
         this.mutex = mutex;
+    }
+
+    public boolean isGroupset() {
+        try{
+            mutex.lock();
+            return groupset;
+        }catch (Exception e){
+
+        }finally {
+            mutex.unlock();
+        }
+        return false;
+    }
+
+    public void setGroupset(boolean groupset) {
+        try{
+            mutex.lock();
+            this.groupset = groupset;
+        }catch (Exception e){
+
+        }finally {
+            mutex.unlock();
+        }
+    }
+
+    public boolean isGenerated() {
+        try{
+            mutex.lock();
+            return generated;
+        }catch (Exception e){
+
+        }finally {
+            mutex.unlock();
+        }
+        return false;
+    }
+
+    public void setGenerated(boolean generated) {
+        try{
+            mutex.lock();
+            this.generated = generated;
+        }catch (Exception e){
+
+        }finally {
+            mutex.unlock();
+        }
     }
 }

@@ -4,7 +4,6 @@ import java.util.*;
 import java.util.concurrent.ThreadLocalRandom;
 import java.util.stream.Collectors;
 
-//TODO: Ja cie pierdole, to w ogole nie dziala ale zaraz cos rozkurwie o sciane, we to napraw Daniel do kurwy nedzy no.
 public class Brain implements Comparable<Brain> {
     private Integer lp;
     private Integer score;
