@@ -161,6 +161,7 @@ public class GameInstance extends Thread {
             restart();
             //TODO: Ten update tez rzuca overflow, sproboj naprawic
             if (index < genetics.getPopulation()) {
+                //System.out.println("Overflow check, index: "+index+" // population: "+genetics.getPopulation());
                 update();
             } else {
                 gameView.setFinishedInstances(gameView.getFinishedInstances()+1);

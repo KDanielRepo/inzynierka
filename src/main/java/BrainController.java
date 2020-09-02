@@ -23,13 +23,13 @@ public class BrainController {
         brain.createPerceptronMap(2, list);*/
     }
 
+    //TODO: to jest niby powod overflow, ten replaceAll, zobacz co mozna z tym zrobic; Teraz cos z max :<
     public Integer generateMove() {
         Float value = Float.parseFloat(brain.getOutputLayer().values()
                 .stream()
                 .max(Comparator.naturalOrder())
                 .toString()
-                .substring(8)
-                .replaceAll("[\\[\\]]", ""));
+                .replaceAll("[\\[\\][A-Za-z]]", ""));
         Integer move = Integer.parseInt(brain.getOutputLayer()
                 .entries()
                 .stream()
@@ -37,8 +37,7 @@ public class BrainController {
                 .map(Map.Entry::getKey)
                 .findFirst()
                 .toString()
-                .substring(8)
-                .replaceAll("[\\[\\]]", ""));
+                .replaceAll("[\\[\\][A-Za-z]]", ""));
         return move;
     }
 
