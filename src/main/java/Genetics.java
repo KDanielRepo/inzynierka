@@ -21,7 +21,7 @@ public class Genetics {
         best = new Brain();
         bestBrains = new ArrayList<>();
         population = 100;
-        generation = 50;
+        generation = 500;
         groupset = false;
     }
 
@@ -110,6 +110,8 @@ public class Genetics {
             getGenePool().add(child1);
             getGenePool().add(child2);
         }
+        setGroupset(true);
+        setGenerated(true);
     }
 
     public void createOffspringNew() {
@@ -179,10 +181,10 @@ public class Genetics {
     }*/
     public void getAverageFitness() {
         int sum = 0;
-        System.out.println("Rozmiar to: " + getGenePool().size());
         for (int i = 0; i < getGenePool().size(); i++) {
             sum += getGenePool().get(i).getScore();
         }
+        System.out.println("rozmiar GP to: "+getGenePool().size());
         System.out.println("Srednia to: " + sum / population);
         //System.out.println(sum/getGenePool().size());
     }

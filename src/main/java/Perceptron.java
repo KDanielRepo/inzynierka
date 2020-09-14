@@ -2,6 +2,8 @@ import com.google.common.collect.HashMultimap;
 import com.google.common.collect.Iterables;
 import com.google.common.collect.Multimap;
 
+import java.lang.reflect.Array;
+import java.util.Arrays;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -10,6 +12,8 @@ public class Perceptron {
     private Float output;
     private Float sum;
     private int layer;
+    private final Float lambda = 1.0507f;
+    private final Float alpha = 1.6732f;
 
     public Perceptron() {
         inputs = HashMultimap.create();
@@ -17,34 +21,36 @@ public class Perceptron {
     }
 
     public Float activation() {
-        //Float out = Math.max(0, calculateSum());
-        Float lambda = 1.0507f;
-        Float alpha = 1.6732f;
         calculateSum();
-        if(sum<0){
-            Double a = (alpha*Math.exp(sum)-alpha)*lambda;
+        if (sum < 0) {
+            Double a = (alpha * Math.exp(sum) - alpha) * lambda;
             return output = a.floatValue();
-        }else{
+        } else {
             return output = sum * lambda;
         }
     }
 
-    public int log2(Float value){
-        if(value==0f){
+
+    public int log2(Float value) {
+        if (value == 0f) {
             return 0;
         }
-        Double a = (Math.log(value)/Math.log(2)+1e-10);
+        Double a = (Math.log(value) / Math.log(2) + 1e-10);
         return a.intValue();
     }
 
     public Float calculateSum() {
         sum = 0f;
         if(layer == 0){
-            inputs.entries().forEach(entry -> sum += (entry.getKey() * (log2(entry.getValue())*0.01f)));
+            inputs.entries().forEach(entry -> sum += (entry.getKey() * (log2(entry.getValue()))));
         }else{
-            inputs.entries().forEach(entry -> sum += (entry.getKey() * entry.getValue()));
+            inputs.entries().forEach(entry -> sum += (entry.getKey() * normalize(entry.getValue())));
         }
         return sum;
+    }
+
+    public Float normalize(Float value){
+        return ((value - 1) / (200 - 1)) * (1 - 0) + 0;
     }
 
     public Float getOutput() {
@@ -125,4 +131,5 @@ public class Perceptron {
     public void setLayer(int layer) {
         this.layer = layer;
     }
+
 }

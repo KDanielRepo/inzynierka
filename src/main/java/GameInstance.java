@@ -11,7 +11,6 @@ public class GameInstance extends Thread {
     private boolean moved;
     private Integer tries;
     private Genetics genetics;
-    private boolean groupset;
     private GameView gameView;
     private Integer index;
     private boolean selectedAsView;
@@ -37,147 +36,145 @@ public class GameInstance extends Thread {
     }
 
     public synchronized void update() {
-        while(game) {
-            try {
-                while(gameView.isPaused()){
-                    sleep(1);
+        while (true) {
+            while (game) {
+                try {
+                    while (gameView.isPaused()) {
+                        sleep(1);
+                    }
+                    sleep(gameView.getDelay());
+                } catch (InterruptedException e) {
+                    e.printStackTrace();
                 }
-                sleep(gameView.getDelay());
-            } catch (InterruptedException e) {
-                e.printStackTrace();
-            }
-            if (brainController.isNotBlocked()) {
-                brainController.setCurrentMove(brainController.generateMove());
-            } else {
-                brainController.setCurrentMove(brainController.generateMoveWithoutBlocks());
-            }
-            simulateKeyPress(brainController.getCurrentMove());
-            if (left) {
-                for (int k = 0; k < 4; k++) {
-                    for (int i = 0; i < 3; i++) {
-                        for (int j = 0; j < 4; j++) {
-                            if (gameMatrix[i][j].equals(gameMatrix[i + 1][j]) && (gameMatrix[i][j] != 0)) {
-                                gameMatrix[i][j] = gameMatrix[i][j] * 2;
-                                score += gameMatrix[i][j];
-                                gameMatrix[i + 1][j] = 0;
-                                moved = true;
-                            }
-                            if (gameMatrix[i][j] == 0) {
-                                if (gameMatrix[i + 1][j] != 0) {
-                                    gameMatrix[i][j] = gameMatrix[i + 1][j];
+                if (brainController.isNotBlocked()) {
+                        brainController.setCurrentMove(brainController.generateMove());
+                } else {
+                    brainController.setCurrentMove(brainController.generateMoveWithoutBlocks());
+                }
+                simulateKeyPress(brainController.getCurrentMove());
+                if (left) {
+                    for (int k = 0; k < 4; k++) {
+                        for (int i = 0; i < 3; i++) {
+                            for (int j = 0; j < 4; j++) {
+                                if (gameMatrix[i][j].equals(gameMatrix[i + 1][j]) && (gameMatrix[i][j] != 0)) {
+                                    gameMatrix[i][j] = gameMatrix[i][j] * 2;
+                                    score += gameMatrix[i][j];
                                     gameMatrix[i + 1][j] = 0;
                                     moved = true;
                                 }
+                                if (gameMatrix[i][j] == 0) {
+                                    if (gameMatrix[i + 1][j] != 0) {
+                                        gameMatrix[i][j] = gameMatrix[i + 1][j];
+                                        gameMatrix[i + 1][j] = 0;
+                                        moved = true;
+                                    }
+                                }
                             }
                         }
                     }
-                }
-            } else if (right) {
-                for (int k = 0; k < 4; k++) {
-                    for (int i = 3; i > 0; i--) {
-                        for (int j = 0; j < 4; j++) {
-                            if (gameMatrix[i][j].equals(gameMatrix[i - 1][j]) && (gameMatrix[i][j] != 0)) {
-                                gameMatrix[i][j] = gameMatrix[i][j] * 2;
-                                score += gameMatrix[i][j];
-                                gameMatrix[i - 1][j] = 0;
-                                moved = true;
-                            }
-                            if (gameMatrix[i][j] == 0) {
-                                if (gameMatrix[i - 1][j] != 0) {
-                                    gameMatrix[i][j] = gameMatrix[i - 1][j];
+                } else if (right) {
+                    for (int k = 0; k < 4; k++) {
+                        for (int i = 3; i > 0; i--) {
+                            for (int j = 0; j < 4; j++) {
+                                if (gameMatrix[i][j].equals(gameMatrix[i - 1][j]) && (gameMatrix[i][j] != 0)) {
+                                    gameMatrix[i][j] = gameMatrix[i][j] * 2;
+                                    score += gameMatrix[i][j];
                                     gameMatrix[i - 1][j] = 0;
                                     moved = true;
                                 }
+                                if (gameMatrix[i][j] == 0) {
+                                    if (gameMatrix[i - 1][j] != 0) {
+                                        gameMatrix[i][j] = gameMatrix[i - 1][j];
+                                        gameMatrix[i - 1][j] = 0;
+                                        moved = true;
+                                    }
+                                }
                             }
                         }
                     }
-                }
-            } else if (up) {
-                for (int k = 0; k < 4; k++) {
-                    for (int i = 0; i < 4; i++) {
-                        for (int j = 0; j < 3; j++) {
-                            if (gameMatrix[i][j].equals(gameMatrix[i][j + 1]) && (gameMatrix[i][j] != 0)) {
-                                gameMatrix[i][j] = gameMatrix[i][j] * 2;
-                                score += gameMatrix[i][j];
-                                gameMatrix[i][j + 1] = 0;
-                                moved = true;
-                            }
-                            if (gameMatrix[i][j] == 0) {
-                                if (gameMatrix[i][j + 1] != 0) {
-                                    gameMatrix[i][j] = gameMatrix[i][j + 1];
+                } else if (up) {
+                    for (int k = 0; k < 4; k++) {
+                        for (int i = 0; i < 4; i++) {
+                            for (int j = 0; j < 3; j++) {
+                                if (gameMatrix[i][j].equals(gameMatrix[i][j + 1]) && (gameMatrix[i][j] != 0)) {
+                                    gameMatrix[i][j] = gameMatrix[i][j] * 2;
+                                    score += gameMatrix[i][j];
                                     gameMatrix[i][j + 1] = 0;
                                     moved = true;
                                 }
+                                if (gameMatrix[i][j] == 0) {
+                                    if (gameMatrix[i][j + 1] != 0) {
+                                        gameMatrix[i][j] = gameMatrix[i][j + 1];
+                                        gameMatrix[i][j + 1] = 0;
+                                        moved = true;
+                                    }
+                                }
                             }
                         }
                     }
-                }
-            } else if (down) {
-                for (int k = 0; k < 4; k++) {
-                    for (int i = 0; i < 4; i++) {
-                        for (int j = 3; j > 0; j--) {
-                            if (gameMatrix[i][j].equals(gameMatrix[i][j - 1]) && (gameMatrix[i][j] != 0)) {
-                                gameMatrix[i][j] = gameMatrix[i][j] * 2;
-                                score += gameMatrix[i][j];
-                                gameMatrix[i][j - 1] = 0;
-                                moved = true;
-                            }
-                            if (gameMatrix[i][j] == 0) {
-                                if (gameMatrix[i][j - 1] != 0) {
-                                    gameMatrix[i][j] = gameMatrix[i][j - 1];
+                } else if (down) {
+                    for (int k = 0; k < 4; k++) {
+                        for (int i = 0; i < 4; i++) {
+                            for (int j = 3; j > 0; j--) {
+                                if (gameMatrix[i][j].equals(gameMatrix[i][j - 1]) && (gameMatrix[i][j] != 0)) {
+                                    gameMatrix[i][j] = gameMatrix[i][j] * 2;
+                                    score += gameMatrix[i][j];
                                     gameMatrix[i][j - 1] = 0;
                                     moved = true;
+                                }
+                                if (gameMatrix[i][j] == 0) {
+                                    if (gameMatrix[i][j - 1] != 0) {
+                                        gameMatrix[i][j] = gameMatrix[i][j - 1];
+                                        gameMatrix[i][j - 1] = 0;
+                                        moved = true;
+                                    }
                                 }
                             }
                         }
                     }
                 }
-            }
-            if (moved) {
-                random(1);
-                brainController.setCurrentInputs(gameMatrix);
-                brainController.getBlocks().clear();
-                moved = false;
-            } else if (!moved) {
-                if (!brainController.getBlocks().contains(brainController.getCurrentMove())) {
-                    brainController.addBlock(brainController.getCurrentMove());
-                    if (brainController.getBlocks().size() == 4) {
-                        System.out.println(this.getName()+" // DEADLOCK");
-                        brainController.getBlocks().clear();
+                if (moved) {
+                    random(1);
+                    brainController.setCurrentInputs(gameMatrix);
+                    brainController.getBlocks().clear();
+                    moved = false;
+                } else if (!moved) {
+                    if (!brainController.getBlocks().contains(brainController.getCurrentMove())) {
+                        brainController.addBlock(brainController.getCurrentMove());
+                        if (brainController.getBlocks().size() == 4) {
+                            System.out.println(this.getName() + " // DEADLOCK");
+                            brainController.getBlocks().clear();
+                        }
                     }
                 }
-            }
-            up = false;
-            left = false;
-            down = false;
-            right = false;
-            if(selectedAsView){
-                gameView.updateGameArea();
-            }
-            checkGameOver();
-        }if (!game) {
-            tries++;
-            System.out.println(this.getName() + " // " + score+" -- "+index+" / "+genetics.getPopulation()+" tries: "+tries);
-            restart();
-            //TODO: Ten update tez rzuca overflow, sproboj naprawic
-            if (index < genetics.getPopulation()) {
-                //System.out.println("Overflow check, index: "+index+" // population: "+genetics.getPopulation());
-                update();
-            } else {
-                gameView.setFinishedInstances(gameView.getFinishedInstances()+1);
-                gameView.startGenetics();
-                while (!genetics.isGroupset() || !genetics.isGenerated()){
-                    try {
-                        this.wait(100);
-                        System.out.println(this.getName()+" // waiting for groupset");
-                    } catch (InterruptedException e) {
-                        e.printStackTrace();
-                    }
+                up = false;
+                left = false;
+                down = false;
+                right = false;
+                if (selectedAsView) {
+                    gameView.updateGameArea();
                 }
-                if (gameView.getGenerationIndex() < genetics.getGeneration()) {
-                    index = gameView.getIndex();
-                    gameView.setIndex(gameView.getIndex()+1);
-                    update();
+                checkGameOver();
+            }
+            if (!game) {
+                tries++;
+                System.out.println(this.getName() + " // " + score + " -- " + index + " / " + genetics.getPopulation() + " tries: " + tries);
+                restart();
+                 if(index>=genetics.getPopulation()){
+                    gameView.setFinishedInstances(gameView.getFinishedInstances() + 1);
+                    gameView.startGenetics();
+                    while (!genetics.isGroupset() || !genetics.isGenerated()) {
+                        try {
+                            this.wait(1000);
+                            System.out.println(this.getName() + " // waiting for groupset");
+                        } catch (InterruptedException e) {
+                            e.printStackTrace();
+                        }
+                    }
+                    if (gameView.getGenerationIndex() < genetics.getGeneration()) {
+                        index = gameView.getIndex();
+                        gameView.setIndex(gameView.getIndex() + 1);
+                    }
                 }
             }
         }
@@ -231,7 +228,7 @@ public class GameInstance extends Thread {
                 brainController.getBrain().setScore(brainController.getBrain().getScore() + score);
                 brainController.getBrain().setLp(index);
             }
-            if (!groupset && tries == 10 && index<=genetics.getPopulation()) {
+            if (!genetics.isGroupset() && tries == 10 && index<=genetics.getPopulation()) {
                 brainController.getBrain().setScore((brainController.getBrain().getScore() + score) / 10);
                 brainController.getBrain().setLp(index);
                 index = gameView.getIndex();
@@ -241,11 +238,11 @@ public class GameInstance extends Thread {
                 brain.createDefaultPerceptronMap();
                 brainController.setBrain(brain);
                 tries = 0;
-            } else if (groupset && tries == 10 && index<=genetics.getPopulation()) {
+            } else if (genetics.isGroupset() && tries == 10 && index<=genetics.getPopulation()) {
                 brainController.getBrain().setScore((brainController.getBrain().getScore() + score) / 10);
                 brainController.getBrain().setLp(index);
-                index = gameView.getIndex();
                 brainController.setBrain(genetics.getGenePool().get(index));
+                index = gameView.getIndex();
                 gameView.setIndex(gameView.getIndex()+1);
                 tries = 0;
             }
@@ -352,14 +349,6 @@ public class GameInstance extends Thread {
 
     public void setGenetics(Genetics genetics) {
         this.genetics = genetics;
-    }
-
-    public boolean isGroupset() {
-        return groupset;
-    }
-
-    public void setGroupset(boolean groupset) {
-        this.groupset = groupset;
     }
 
     public boolean isSelectedAsView() {

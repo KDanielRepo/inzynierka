@@ -1,4 +1,5 @@
 import com.google.common.base.Predicate;
+import com.google.common.collect.Iterables;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Multimap;
 import com.google.common.collect.Multimaps;
@@ -23,40 +24,43 @@ public class BrainController {
         brain.createPerceptronMap(2, list);*/
     }
 
-    //TODO: to jest niby powod overflow, ten replaceAll, zobacz co mozna z tym zrobic; Teraz cos z max :<
-    public Integer generateMove() {
-        Float value = Float.parseFloat(brain.getOutputLayer().values()
+    public Integer generateMove(){
+        Map<Integer, Float> map = softmax();
+        Float value = Float.parseFloat(map
+                .values()
                 .stream()
                 .max(Comparator.naturalOrder())
                 .toString()
-                .replaceAll("[\\[\\][A-Za-z]]", ""));
-        Integer move = Integer.parseInt(brain.getOutputLayer()
-                .entries()
+                .substring(8)
+                .replaceAll("[\\[\\]]",""));
+
+        return Integer.parseInt(map
+                .entrySet()
                 .stream()
-                .filter(entry -> value.equals(entry.getValue()))
+                .filter(entry->value.equals(entry.getValue()))
                 .map(Map.Entry::getKey)
                 .findFirst()
                 .toString()
-                .replaceAll("[\\[\\][A-Za-z]]", ""));
-        return move;
+                .substring(8)
+                .replaceAll("[\\[\\]]",""));
     }
 
+    //TODO: BLOK PSUJE ŁEEEEEE
     public Integer generateMoveWithoutBlocks(){
-        List<Float> floats = new ArrayList<>(brain.getOutputLayer().values());
-        floats.sort(Comparator.naturalOrder());
-
         List<Integer> avMoves = new ArrayList<>();
+        Map<Integer,Float> map = softmax();
         Integer move = -1;
-        for (int i = floats.size()-1; i >=0 ; i--) {
+        for (int i = map.size()-1; i >=0 ; i--) {
             int finalI = i;
-            move = Integer.parseInt(brain.getOutputLayer()
-                    .entries()
+            move = Integer.parseInt(map
+                    .entrySet()
                     .stream()
-                    .filter(entry -> floats.get(finalI).equals(entry.getValue()))
+                    .filter(entry -> map.get(finalI).equals(entry.getValue()))
                     .map(Map.Entry::getKey)
                     .findFirst()
                     .toString()
-                    .replaceAll("[\\[\\]a-z,A-Z]", ""));
+                    .substring(8)
+                    .replaceAll("[\\[\\]]", ""));
             avMoves.add(move);
         }
         blocks.stream().distinct().forEach(e->{
@@ -65,6 +69,17 @@ public class BrainController {
             }
         });
         return avMoves.get(0);
+    }
+
+    public Map<Integer,Float> softmax(){
+        Map<Integer,Float> probabilities = new HashMap<>();
+        for (int i = 0; i < brain.getOutputLayer().size(); i++) {
+            Float sum = brain.getOutputLayer().values().stream().map(Math::exp).reduce(0d,Double::sum).floatValue();
+            Float value = Iterables.get(brain.getOutputLayer().values(),i);
+            Float probability =  value/sum;
+            probabilities.put(i,probability);
+        }
+        return probabilities;
     }
 
     public void activateAll(){
@@ -83,7 +98,7 @@ public class BrainController {
         int i = 0;
         for (Perceptron p : brain.getGivenLayer(0).values()) {
             //if(i<16)
-            for (int k = 0; k < brain.getGivenLayer(0).size(); k++) {
+            for (int k = 0; k < 16; k++) {
                 p.replacePerceptronValue(k, list.get(k).floatValue());
             }
             i++;

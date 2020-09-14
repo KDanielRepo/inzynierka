@@ -33,7 +33,12 @@ public class Brain implements Comparable<Brain> {
     }
 
     public Multimap<Integer, Float> getOutputLayer() {
-        Multimap<Integer, Float> out = Multimaps.transformValues(getGivenLayer(getPerceptronMap().size() - 1), Perceptron::activation);
+        Multimap<Integer, Float> out = HashMultimap.create();
+        for(int i = 0; i<getGivenLayer(getPerceptronMap().size()-1).values().size(); i++){
+            Perceptron p = Iterables.get(getGivenLayer(getPerceptronMap().size()-1).values(),i);
+            out.put(i,p.activation());
+        }
+        //Multimap<Integer, Float> out = Multimaps.transformValues(getGivenLayer(getPerceptronMap().size() - 1), Perceptron::activation);
         return out;
     }
 
@@ -150,14 +155,14 @@ public class Brain implements Comparable<Brain> {
     }
 
     public void createDefaultPerceptronMap() {
-        List<Integer> rows = Arrays.asList(16, 8, 4, 4);
+        List<Integer> rows = Arrays.asList(8, 8, 8, 8, 4);
         perceptronMap = ArrayListMultimap.create();
-        for (int k = 0; k < 4; k++) {
+        for (int k = 0; k < rows.size(); k++) {
             Multimap<Integer, Perceptron> temp = ArrayListMultimap.create();
             for (int l = 0; l < rows.get(k); l++) {
                 Perceptron p = new Perceptron();
                 if (k == 0) {
-                    for (int i = 0; i < rows.get(0); i++) {
+                    for (int i = 0; i < 16; i++) {
                         Float weight = ThreadLocalRandom.current().nextFloat();
                         Float value = 0f;
                         p.getInputs().put(weight, value);

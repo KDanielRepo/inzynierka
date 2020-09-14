@@ -12,6 +12,7 @@ import javafx.scene.layout.VBox;
 import javafx.scene.paint.Color;
 import javafx.stage.Stage;
 
+import java.time.ZonedDateTime;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
@@ -367,8 +368,10 @@ public class GameView extends Application {
             genetics.getAverageFitness();
             genetics.calculateGlobalFitness();
             genetics.calculateRFitness();
-            genetics.createOffspringNew();
+            System.out.println(genetics.getGenePool().size());
+            genetics.createOffspring();
             genetics.resetPcPool();
+            System.out.println(ZonedDateTime.now());
             setIndex(0);
             setGenerationIndex(getGenerationIndex() + 1);
             setFinishedInstances(0);
