@@ -88,6 +88,10 @@ public class Perceptron {
         this.sum = sum;
     }
 
+    public Float getWeight(int index){
+        return Iterables.get(inputs.keys(),index);
+    }
+
     public List<Float> getWeights() {
         return inputs.keys().stream().map(Float::floatValue).collect(Collectors.toList());
     }

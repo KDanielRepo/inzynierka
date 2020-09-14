@@ -158,7 +158,6 @@ public class GameInstance extends Thread {
             }
             if (!game) {
                 tries++;
-                System.out.println(this.getName() + " // " + score + " -- " + index + " / " + genetics.getPopulation() + " tries: " + tries);
                 restart();
                  if(index>=genetics.getPopulation()){
                     gameView.setFinishedInstances(gameView.getFinishedInstances() + 1);
@@ -166,7 +165,7 @@ public class GameInstance extends Thread {
                     while (!genetics.isGroupset() || !genetics.isGenerated()) {
                         try {
                             this.wait(1000);
-                            System.out.println(this.getName() + " // waiting for groupset");
+                            //System.out.println(this.getName() + " // waiting for groupset");
                         } catch (InterruptedException e) {
                             e.printStackTrace();
                         }
@@ -231,6 +230,7 @@ public class GameInstance extends Thread {
             if (!genetics.isGroupset() && tries == 10 && index<=genetics.getPopulation()) {
                 brainController.getBrain().setScore((brainController.getBrain().getScore() + score) / 10);
                 brainController.getBrain().setLp(index);
+                //System.out.println(this.getName() + " // " + brainController.getBrain().getScore() + " -- " + index + " / " + genetics.getPopulation());
                 index = gameView.getIndex();
                 gameView.setIndex(gameView.getIndex()+1);
                 genetics.getGenePool().add(brainController.getBrain());
@@ -241,6 +241,7 @@ public class GameInstance extends Thread {
             } else if (genetics.isGroupset() && tries == 10 && index<=genetics.getPopulation()) {
                 brainController.getBrain().setScore((brainController.getBrain().getScore() + score) / 10);
                 brainController.getBrain().setLp(index);
+                //System.out.println(this.getName() + " // " + brainController.getBrain().getScore() + " -- " + index + " / " + genetics.getPopulation());
                 brainController.setBrain(genetics.getGenePool().get(index));
                 index = gameView.getIndex();
                 gameView.setIndex(gameView.getIndex()+1);

@@ -58,10 +58,14 @@ public class Brain implements Comparable<Brain> {
         int tempIndex = 0;
         for (Multimap<Integer, Perceptron> m : getPerceptronMap().values()) {
             if (temp + m.size() >= index) {
+                if(index==temp+m.size()){
+                    temp+=m.size()-1;
+                }
                 break;
+            }else{
+                temp += m.size();
+                tempIndex++;
             }
-            temp += m.size();
-            tempIndex++;
         }
 
         if (tempIndex != 0) {
@@ -69,7 +73,7 @@ public class Brain implements Comparable<Brain> {
                 p = per;
             }
         } else {
-            for (Perceptron per : getGivenLayer(tempIndex).get(index)) {
+            for (Perceptron per : getGivenLayer(tempIndex).get(temp)) {
                 p = per;
             }
         }
@@ -82,6 +86,9 @@ public class Brain implements Comparable<Brain> {
         int tempIndex = 0;
         for (Multimap<Integer, Perceptron> m : getPerceptronMap().values()) {
             if (temp + m.size() >= index) {
+                if(index==temp+m.size()){
+                    temp+=m.size()-1;
+                }
                 break;
             }
             temp += m.size();
@@ -101,7 +108,7 @@ public class Brain implements Comparable<Brain> {
                 e.setInputs(p.getInputs());
             });
         } else {
-            getGivenLayer(tempIndex).get(index).stream().forEach(e -> {
+            getGivenLayer(tempIndex).get(temp).stream().forEach(e -> {
                 e.setInputs(p.getInputs());
             });
         }

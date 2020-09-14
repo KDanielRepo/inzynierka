@@ -114,6 +114,85 @@ public class Genetics {
         setGenerated(true);
     }
 
+    public void createOffspringCorrect() {
+        getRealFittest();
+        //ustawianie PC kazdego osobnika
+        for (int i = 0; i < getGenePool().size(); i++) {
+            getGenePool().get(i).setPc(ThreadLocalRandom.current().nextFloat() * getGenePool().get(i).getScore());
+        }
+        //wybieranie osobnikow do puli c
+        List<Brain> sorted = getGenePool().stream().sorted(Comparator.comparing(Brain::getPc).reversed()).collect(Collectors.toList());
+        for (int i = 0; i < (sorted.size() - 1) / 2; i++) {
+            if (getPcPool().size() < population) {
+                getPcPool().add(sorted.get(i));
+                sorted.remove(i);
+            }
+        }
+        setGenePool(sorted);
+        //uzupelnienie puli do liczby parzystej
+        while (getPcPool().size() < population || getPcPool().size() % 2 != 0) {
+            int random = ThreadLocalRandom.current().nextInt(0, getGenePool().size());
+            getPcPool().add(getGenePool().get(random));
+            getGenePool().remove(random);
+        }
+        //sprawdzenie czy najlepszy osobnik jest w puli
+        if (!getPcPool().contains(best)) {
+            getPcPool().remove(ThreadLocalRandom.current().nextInt(0, getPcPool().size()));
+            getPcPool().add(best);
+        }
+        setGenePool(new ArrayList<>());
+        //krzyzowanie
+        int[] a = new int[population];
+        System.out.println("rozmiar pc: " + getPcPool().size());
+        for (int i = 0; i < getPcPool().size() / 2; i++) {
+            int random = ThreadLocalRandom.current().nextInt(0, population);
+            if (a[random] == 0) {
+                a[random] = 1;
+            } else {
+                while (a[random] != 0) {
+                    random = ThreadLocalRandom.current().nextInt(0, population);
+                }
+            }
+            Brain brain1 = getPcPool().get(random);
+            int random2 = ThreadLocalRandom.current().nextInt(0, population);
+            if (a[random2] == 0) {
+                a[random2] = 1;
+            } else {
+                while (a[random2] != 0) {
+                    random2 = ThreadLocalRandom.current().nextInt(0, population);
+                }
+            }
+            Brain brain2 = getPcPool().get(random2);
+            Brain child1 = new Brain();
+            child1.createDefaultPerceptronMap();
+            Brain child2 = new Brain();
+            child2.createDefaultPerceptronMap();
+
+            Double lowerHalf = Math.floor((double) brain1.getPerceptronCount() / 2);
+            Double upperHalf = Math.ceil((double) brain2.getPerceptronCount() / 2);
+            int cut = ThreadLocalRandom.current().nextInt(1, lowerHalf.intValue());
+            int cut2 = ThreadLocalRandom.current().nextInt(1, upperHalf.intValue());
+
+            for (int k = 0; k < cut; k++) {
+                child1.replaceGivenPerceptron(k, brain1.getGivenPerceptron(k));
+            }
+            for (int k = 0; k < cut2; k++) {
+                child2.replaceGivenPerceptron(k, brain2.getGivenPerceptron(k));
+            }
+            for (int k = cut; k < brain1.getPerceptronCount(); k++) {
+                child2.replaceGivenPerceptron(k, brain1.getGivenPerceptron(k));
+            }
+            for (int k = cut2; k < brain2.getPerceptronCount(); k++) {
+                child1.replaceGivenPerceptron(k, brain2.getGivenPerceptron(k));
+            }
+            getGenePool().add(child1);
+            getGenePool().add(child2);
+        }
+        //mutate();
+        setGroupset(true);
+        setGenerated(true);
+    }
+
     public void createOffspringNew() {
         //ustawianie PC kazdego osobnika
         for (int i = 0; i < getGenePool().size(); i++) {
@@ -163,28 +242,32 @@ public class Genetics {
     }
 
     //Narazie tego nie potrzebuje, dodam moze pozniej
-    /*public void mutate(){
-        for (int i = 0; i < getGenePool().size(); i++) {
-            for (int j = 0; j < getGenePool().get(i).getPerceptronMap().size(); j++) {
-                float temp = (float) getGenePool().get(i).getPerceptronMap().size();
-                float probability = 1/temp;
-                float random = ThreadLocalRandom.current().nextFloat()/100;
-                if(random<probability){
-                    int rrandom = ThreadLocalRandom.current().nextInt(0,3);
-                    while (rrandom==getGenePool().get(i).getMoves().get(j)){
-                        rrandom = ThreadLocalRandom.current().nextInt(0,3);
+    public void mutate() {
+        for (int i = 0; i < getGenePool().size() - 1; i++) {
+            for (int j = 0; j < getGenePool().get(i).getPerceptronCount()-1; j++) {
+                float temp = (float) getGenePool().get(i).getPerceptronCount();
+                float probability = 1 / temp;
+                float random = ThreadLocalRandom.current().nextFloat();
+                if (random < probability) {
+                    float mutation = ThreadLocalRandom.current().nextFloat();
+                    int mutationNumber = 0;
+                    try{
+                        mutationNumber = ThreadLocalRandom.current().nextInt(0,getGenePool().get(i).getGivenPerceptron(j).getWeights().size());
+                    }catch (Exception e){
+                        e.printStackTrace();
                     }
-                    getGenePool().get(i).setMove(j,rrandom);
+                    getGenePool().get(i).getGivenPerceptron(j).replacePerceptronWeight(mutationNumber, mutation);
                 }
             }
         }
-    }*/
+    }
+
     public void getAverageFitness() {
         int sum = 0;
         for (int i = 0; i < getGenePool().size(); i++) {
             sum += getGenePool().get(i).getScore();
         }
-        System.out.println("rozmiar GP to: "+getGenePool().size());
+        System.out.println("rozmiar GP to: " + getGenePool().size());
         System.out.println("Srednia to: " + sum / population);
         //System.out.println(sum/getGenePool().size());
     }
@@ -258,12 +341,12 @@ public class Genetics {
     }
 
     public List<Brain> getGenePool() {
-        try{
+        try {
             mutex.lock();
             return genePool;
-        }catch (Exception e){
+        } catch (Exception e) {
 
-        }finally {
+        } finally {
             mutex.unlock();
         }
         return null;
@@ -298,24 +381,24 @@ public class Genetics {
     }
 
     public int getGeneration() {
-        try{
+        try {
             mutex.lock();
             return generation;
-        }catch (Exception e){
+        } catch (Exception e) {
 
-        }finally {
+        } finally {
             mutex.unlock();
         }
         return 0;
     }
 
     public void setGeneration(int generation) {
-        try{
+        try {
             mutex.lock();
             this.generation = generation;
-        }catch (Exception e){
+        } catch (Exception e) {
 
-        }finally {
+        } finally {
             mutex.unlock();
         }
     }
@@ -329,47 +412,47 @@ public class Genetics {
     }
 
     public boolean isGroupset() {
-        try{
+        try {
             mutex.lock();
             return groupset;
-        }catch (Exception e){
+        } catch (Exception e) {
 
-        }finally {
+        } finally {
             mutex.unlock();
         }
         return false;
     }
 
     public void setGroupset(boolean groupset) {
-        try{
+        try {
             mutex.lock();
             this.groupset = groupset;
-        }catch (Exception e){
+        } catch (Exception e) {
 
-        }finally {
+        } finally {
             mutex.unlock();
         }
     }
 
     public boolean isGenerated() {
-        try{
+        try {
             mutex.lock();
             return generated;
-        }catch (Exception e){
+        } catch (Exception e) {
 
-        }finally {
+        } finally {
             mutex.unlock();
         }
         return false;
     }
 
     public void setGenerated(boolean generated) {
-        try{
+        try {
             mutex.lock();
             this.generated = generated;
-        }catch (Exception e){
+        } catch (Exception e) {
 
-        }finally {
+        } finally {
             mutex.unlock();
         }
     }
