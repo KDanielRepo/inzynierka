@@ -6,7 +6,7 @@ import javax.xml.bind.annotation.XmlAccessType;
 import javax.xml.bind.annotation.XmlAccessorType;
 import javax.xml.bind.annotation.XmlElement;
 import javax.xml.bind.annotation.XmlRootElement;
-import java.util.List;
+import java.util.*;
 import java.util.stream.Collectors;
 
 /*@XmlRootElement(name = "Perceptron")
@@ -18,9 +18,11 @@ public class Perceptron {
     private int layer;
     private final Float lambda = 1.0507f;
     private final Float alpha = 1.6732f;
+    //private Mutex mutex;
 
     public Perceptron() {
         inputs = HashMultimap.create();
+        //mutex = new Mutex();
         sum = 0f;
     }
 
@@ -42,13 +44,30 @@ public class Perceptron {
         return a.intValue();
     }
 
+    //TODO: Ale zaraz przeca cos rozwale, dlaczego tutaj rzuca ten ConcurrentModificationException...
+
     public Float calculateSum() {
         sum = 0f;
-        if (layer == 0) {
+        if(layer==0){
+            for (int i = 0; i < inputs.size(); i++) {
+                sum+=Iterables.get(inputs.keys(),i)*(log2(Iterables.get(inputs.values(),i)));
+            }
+        }else{
+            for (int i = 0; i < inputs.size(); i++) {
+                sum+=Iterables.get(inputs.keys(),i)*(normalize(Iterables.get(inputs.values(),i)));
+            }
+        }
+        /*if (layer == 0) {
             inputs.entries().forEach(entry -> sum += (entry.getKey() * (log2(entry.getValue()))));
         } else {
-            inputs.entries().forEach(entry -> sum += (entry.getKey() * normalize(entry.getValue())));
-        }
+            try {
+                inputs.entries().forEach(entry -> sum += (entry.getKey() * (normalize(entry.getValue()))));
+            } catch (Exception e) {
+                System.out.println(inputs.size());
+                System.out.println(layer);
+                e.printStackTrace();
+            }
+        }*/
         return sum;
     }
 
@@ -57,7 +76,14 @@ public class Perceptron {
     }
 
     public void replacePerceptronValue(int index, float value) {
-        Multimap<Float, Float> tempMap = HashMultimap.create();
+        try {
+            Iterable iter = Arrays.asList(value);
+            inputs.replaceValues(Iterables.get(inputs.keys(), index), iter);
+        } catch (Exception e) {
+            System.out.println(index);
+        }
+        //getInputs().replaceValues(Iterables.get(getInputs().keys(), index),Arrays.asList(value));
+        /*Multimap<Float, Float> tempMap = HashMultimap.create();
         for (int i = 0; i < inputs.size(); i++) {
             if (i != index) {
                 tempMap.put(Iterables.get(inputs.keys(), i), Iterables.get(inputs.values(), i));
@@ -68,8 +94,7 @@ public class Perceptron {
         if (output == Iterables.get(inputs.values(), 0)) {
             output = Iterables.get(tempMap.values(), 0);
         }
-        setInputs(tempMap);
-        //inputs = tempMap;
+        setInputs(tempMap);*/
     }
 
     public void replacePerceptronWeight(int index, float weight) {
@@ -85,7 +110,7 @@ public class Perceptron {
         if (output == Iterables.get(inputs.values(), 0)) {
             output = Iterables.get(tempMap.values(), 0);
         }
-        inputs = tempMap;
+        setInputs(tempMap);
     }
 
     public Float getOutput() {
@@ -97,17 +122,60 @@ public class Perceptron {
         this.output = output;
     }
 
+
     public Float getInput(Integer i) {
+
         return Iterables.get(inputs.values(), i);
+
     }
+
+    /*public Float getInput(Integer i) {
+        try {
+            mutex.lock();
+            return Iterables.get(inputs.values(), i);
+        } catch (Exception e) {
+            e.printStackTrace();
+        } finally {
+            mutex.unlock();
+        }
+        return null;
+    }*/
+
 
     public Multimap<Float, Float> getInputs() {
         return inputs;
+
     }
 
+    /*public Multimap<Float, Float> getInputs() {
+        try {
+            mutex.lock();
+            return inputs;
+        } catch (Exception e) {
+            e.printStackTrace();
+        } finally {
+            mutex.unlock();
+        }
+        return null;
+    }*/
+
+
     public void setInputs(Multimap<Float, Float> inputs) {
+
         this.inputs = inputs;
+
     }
+
+    /*public void setInputs(Multimap<Float, Float> inputs) {
+        try {
+            mutex.lock();
+            this.inputs = inputs;
+        } catch (Exception e) {
+            e.printStackTrace();
+        } finally {
+            mutex.unlock();
+        }
+    }*/
 
     public void createInputs(List<Float> weights, List<Float> values) {
         for (int i = 0; i < weights.size(); i++) {
@@ -124,13 +192,39 @@ public class Perceptron {
     }
 
     public Float getWeight(int index) {
-        //System.out.println(getInputs().keys().size());
         return Iterables.get(inputs.keys(), index);
+
     }
+
+    /*public Float getWeight(int index) {
+        //System.out.println(getInputs().keys().size());
+        try {
+            mutex.lock();
+            return Iterables.get(inputs.keys(), index);
+        } catch (Exception e) {
+            e.printStackTrace();
+        } finally {
+            mutex.unlock();
+        }
+        return null;
+    }*/
+
 
     public List<Float> getWeights() {
         return inputs.keys().stream().map(Float::floatValue).collect(Collectors.toList());
     }
+
+    /*public List<Float> getWeights() {
+        try {
+            mutex.lock();
+            return inputs.keys().stream().map(Float::floatValue).collect(Collectors.toList());
+        } catch (Exception e) {
+            e.printStackTrace();
+        } finally {
+            mutex.unlock();
+        }
+        return null;
+    }*/
 
     public int getLayer() {
         return layer;

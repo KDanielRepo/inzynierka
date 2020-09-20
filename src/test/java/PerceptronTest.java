@@ -7,17 +7,35 @@ import org.junit.runners.JUnit4;
 public class PerceptronTest {
 
     @Test
+    public void sumTest(){
+        Perceptron p = createPerceptron();
+        long start = System.nanoTime();
+        p.calculateSum();
+        long end = System.nanoTime();
+        System.out.println("wynik: "+(end-start)*0.000000001);
+    }
+
+    @Test
     public void replacePerceptronValueTest(){
         Perceptron p1 = createPerceptron();
+        System.out.println(p1.getInputs());
+        long start = System.nanoTime();
         p1.replacePerceptronValue(0,4f);
-
+        long end = System.nanoTime();
+        System.out.println("wynik: "+(end-start)*0.000000001);
+        System.out.println(p1.getInputs());
         Assert.assertEquals(p1.getInput(0),new Float(4));
     }
 
     @Test
     public void replacePerceptronWeightTest(){
         Perceptron p1 = createPerceptron();
+        System.out.println(p1.getInputs());
+        long start = System.nanoTime();
         p1.replacePerceptronWeight(0,5f);
+        long end = System.nanoTime();
+        System.out.println("wynik: "+(end-start)*0.000000001);
+        System.out.println(p1.getInputs());
 
         Assert.assertEquals(p1.getWeight(0),new Float(5));
     }

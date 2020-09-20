@@ -81,14 +81,6 @@ public class BrainController {
         return probabilities;
     }
 
-    public void activateAll(){
-        for (Multimap<Integer, Perceptron> mp : brain.getPerceptronMap().values()){
-            for (Perceptron p : mp.values()){
-                p.activation();
-            }
-        }
-    }
-
     public void setCurrentInputs(Integer[][] matrix) {
         List<Integer> list = new ArrayList<>();
         for (Integer[] i : matrix) {
@@ -96,18 +88,11 @@ public class BrainController {
         }
         int i = 0;
         for (Perceptron p : brain.getGivenLayer(0).values()) {
-            //if(i<16)
-            for (int k = 0; k < 16; k++) {
-                p.replacePerceptronValue(k, list.get(k).floatValue());
-            }
+                p.replacePerceptronValue(i, list.get(i).floatValue());
+                p.activation();
             i++;
         }
-        //activateAll();
         brain.updatePerceptronValues();
-    }
-
-    public void training(){
-
     }
 
     public Brain getBrain() {
@@ -138,6 +123,7 @@ public class BrainController {
             e.replacePerceptronValue(0,0);
         });
     }
+
     private Predicate<Integer> between(int from, int to){
         return new Predicate<Integer>() {
             @Override

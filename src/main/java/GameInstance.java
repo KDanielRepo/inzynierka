@@ -4,7 +4,7 @@ import java.util.concurrent.ThreadLocalRandom;
 
 public class GameInstance extends Thread {
     private Integer[][] gameMatrix = new Integer[4][4];
-    private Integer randomA, randomB, score;
+    private Integer score;
     private BrainController brainController;
     private boolean game;
     private boolean up, left, down, right;
@@ -141,10 +141,6 @@ public class GameInstance extends Thread {
                 } else if (!moved) {
                     if (!brainController.getBlocks().contains(brainController.getCurrentMove())) {
                         brainController.addBlock(brainController.getCurrentMove());
-                        if (brainController.getBlocks().size() == 4) {
-                            System.out.println(this.getName() + " // DEADLOCK");
-                            brainController.getBlocks().clear();
-                        }
                     }
                 }
                 up = false;
@@ -165,7 +161,7 @@ public class GameInstance extends Thread {
                     while (!genetics.isGroupset() || !genetics.isGenerated()) {
                         try {
                             this.wait(1000);
-                            System.out.println(this.getName() + " // waiting for groupset");
+                            //System.out.println(this.getName() + " // waiting for groupset");
                         } catch (InterruptedException e) {
                             e.printStackTrace();
                         }
@@ -224,6 +220,7 @@ public class GameInstance extends Thread {
     public void restart() {
         brainController.getBlocks().clear();
             if (tries <= 10) {
+                //System.out.println(this.getName() + " // " + brainController.getBrain().getScore() + " -- " + index + " / " + genetics.getPopulation());
                 brainController.getBrain().setScore(brainController.getBrain().getScore() + score);
                 brainController.getBrain().setLp(index);
             }

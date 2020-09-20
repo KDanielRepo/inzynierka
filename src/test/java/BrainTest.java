@@ -1,4 +1,5 @@
 import com.google.common.collect.Iterables;
+import com.google.common.collect.Multimap;
 import org.junit.Assert;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -11,9 +12,18 @@ public class BrainTest {
     public void getGivenPerceptronTest(){
         Brain brain = createBrain();
         //System.out.println(brain.getPerceptronCount());
-        Perceptron p1 = brain.getGivenPerceptron(9);
-        Perceptron p2 = Iterables.get(brain.getPerceptronMap().get(2).stream().findFirst().get().values(),0);
+        Perceptron p1 = brain.getGivenPerceptron(8);
+        Perceptron p2 = Iterables.get(brain.getPerceptronMap().get(1).stream().findFirst().get().values(),0);
         Assert.assertEquals(p1,p2);
+    }
+
+    @Test
+    public void getOutputLayerTest(){
+        Brain brain = createBrain();
+        brain.createDefaultPerceptronMap();
+
+        Multimap<Integer,Float> a = brain.getOutputLayer();
+        System.out.println(a);
     }
 
     @Test
@@ -46,7 +56,10 @@ public class BrainTest {
         Brain brain = createBrain();
         System.out.println(brain.getOutputLayer().values());
         brain.getGivenPerceptron(0).replacePerceptronValue(0,15);
+        long start = System.nanoTime();
         brain.updatePerceptronValues();
+        long end = System.nanoTime();
+        System.out.println("wynik: "+(end-start)*0.000000001);
         System.out.println(brain.getOutputLayer().values());
     }
 
