@@ -369,7 +369,7 @@ public class GameView extends Application {
             genetics.calculateGlobalFitness();
             genetics.calculateRFitness();
             System.out.println(genetics.getGenePool().size());
-            genetics.createOffspringCorrect();
+            genetics.createOffspring();
             genetics.resetPcPool();
             System.out.println(ZonedDateTime.now());
             setIndex(0);

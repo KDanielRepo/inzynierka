@@ -2,11 +2,15 @@ import com.google.common.collect.HashMultimap;
 import com.google.common.collect.Iterables;
 import com.google.common.collect.Multimap;
 
-import java.lang.reflect.Array;
-import java.util.Arrays;
+import javax.xml.bind.annotation.XmlAccessType;
+import javax.xml.bind.annotation.XmlAccessorType;
+import javax.xml.bind.annotation.XmlElement;
+import javax.xml.bind.annotation.XmlRootElement;
 import java.util.List;
 import java.util.stream.Collectors;
 
+/*@XmlRootElement(name = "Perceptron")
+@XmlAccessorType(XmlAccessType.FIELD)*/
 public class Perceptron {
     private Multimap<Float, Float> inputs;
     private Float output;
@@ -30,7 +34,6 @@ public class Perceptron {
         }
     }
 
-
     public int log2(Float value) {
         if (value == 0f) {
             return 0;
@@ -41,16 +44,48 @@ public class Perceptron {
 
     public Float calculateSum() {
         sum = 0f;
-        if(layer == 0){
+        if (layer == 0) {
             inputs.entries().forEach(entry -> sum += (entry.getKey() * (log2(entry.getValue()))));
-        }else{
+        } else {
             inputs.entries().forEach(entry -> sum += (entry.getKey() * normalize(entry.getValue())));
         }
         return sum;
     }
 
-    public Float normalize(Float value){
+    public Float normalize(Float value) {
         return ((value - 1) / (200 - 1)) * (1 - 0) + 0;
+    }
+
+    public void replacePerceptronValue(int index, float value) {
+        Multimap<Float, Float> tempMap = HashMultimap.create();
+        for (int i = 0; i < inputs.size(); i++) {
+            if (i != index) {
+                tempMap.put(Iterables.get(inputs.keys(), i), Iterables.get(inputs.values(), i));
+            } else {
+                tempMap.put(Iterables.get(inputs.keys(), i), value);
+            }
+        }
+        if (output == Iterables.get(inputs.values(), 0)) {
+            output = Iterables.get(tempMap.values(), 0);
+        }
+        setInputs(tempMap);
+        //inputs = tempMap;
+    }
+
+    public void replacePerceptronWeight(int index, float weight) {
+        Multimap<Float, Float> tempMap = HashMultimap.create();
+        for (int i = 0; i < inputs.size(); i++) {
+            if (i != index) {
+                tempMap.put(Iterables.get(inputs.keys(), i), Iterables.get(inputs.values(), i));
+            } else {
+                tempMap.put(weight, Iterables.get(inputs.values(), i));
+            }
+
+        }
+        if (output == Iterables.get(inputs.values(), 0)) {
+            output = Iterables.get(tempMap.values(), 0);
+        }
+        inputs = tempMap;
     }
 
     public Float getOutput() {
@@ -88,44 +123,13 @@ public class Perceptron {
         this.sum = sum;
     }
 
-    public Float getWeight(int index){
-        return Iterables.get(inputs.keys(),index);
+    public Float getWeight(int index) {
+        //System.out.println(getInputs().keys().size());
+        return Iterables.get(inputs.keys(), index);
     }
 
     public List<Float> getWeights() {
         return inputs.keys().stream().map(Float::floatValue).collect(Collectors.toList());
-    }
-
-    public void replacePerceptronValue(int index, float value) {
-        Multimap<Float, Float> tempMap = HashMultimap.create();
-        for (int i = 0; i < inputs.size(); i++) {
-            if (i != index) {
-                tempMap.put(Iterables.get(inputs.keys(), i), Iterables.get(inputs.values(), i));
-            } else {
-                tempMap.put(Iterables.get(inputs.keys(), i), value);
-            }
-
-        }
-        if (output == Iterables.get(inputs.values(), 0)) {
-            output = Iterables.get(tempMap.values(), 0);
-        }
-        inputs = tempMap;
-    }
-
-    public void replacePerceptronWeight(int index, float weight) {
-        Multimap<Float, Float> tempMap = HashMultimap.create();
-        for (int i = 0; i < inputs.size(); i++) {
-            if (i != index) {
-                tempMap.put(Iterables.get(inputs.keys(), i), Iterables.get(inputs.values(), i));
-            } else {
-                tempMap.put(weight, Iterables.get(inputs.values(), i));
-            }
-
-        }
-        if (output == Iterables.get(inputs.values(), 0)) {
-            output = Iterables.get(tempMap.values(), 0);
-        }
-        inputs = tempMap;
     }
 
     public int getLayer() {

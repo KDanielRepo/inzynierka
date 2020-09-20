@@ -45,7 +45,6 @@ public class BrainController {
                 .replaceAll("[\\[\\]]",""));
     }
 
-    //TODO: BLOK PSUJE ŁEEEEEE
     public Integer generateMoveWithoutBlocks(){
         List<Integer> avMoves = new ArrayList<>();
         Map<Integer,Float> map = softmax();

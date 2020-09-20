@@ -58,6 +58,14 @@ public class Genetics {
         //krzyzowanie
         int[] a = new int[population];
         System.out.println("rozmiar pc: " + getPcPool().size());
+        int weights = 0;
+        for (int j = 0; j <getPcPool().get(0).getPerceptronMap().values().size() ; j++) {
+            for (int k = 0; k <getPcPool().get(0).getGivenLayer(j).values().size() ; k++) {
+                for (int l = 0; l <getPcPool().get(0).getGivenPerceptron(k).getInputs().keys().size() ; l++) {
+                    weights++;
+                }
+            }
+        }
         for (int i = 0; i < getPcPool().size() / 2; i++) {
             int random = ThreadLocalRandom.current().nextInt(0, population);
             if (a[random] == 0) {
@@ -79,40 +87,36 @@ public class Genetics {
             Brain brain2 = getPcPool().get(random2);
             Brain child1 = new Brain();
             child1.createDefaultPerceptronMap();
+            child1.setPerceptronMap(brain1.getPerceptronMap());
             Brain child2 = new Brain();
             child2.createDefaultPerceptronMap();
+            child2.setPerceptronMap(brain2.getPerceptronMap());
 
-            //Czym są geny w tym brainie???? (moze wagi na neuronach)
-            //Gdzie zrobic cut????
-            //Zamien inty w cut na floaty i zamien je pozniej na int
-            Double lowerHalf = Math.floor((double) brain1.getPerceptronCount() / 2);
-            Double upperHalf = Math.ceil((double) brain2.getPerceptronCount() / 2);
+            Double lowerHalf = Math.floor((double) weights / 2);
+            Double upperHalf = Math.ceil((double) weights / 2);
             int cut = ThreadLocalRandom.current().nextInt(1, lowerHalf.intValue());
             int cut2 = ThreadLocalRandom.current().nextInt(1, upperHalf.intValue());
 
             for (int k = 0; k < cut; k++) {
-                //child1.getPerceptronMap().values().stream().forEach();
-                child1.replaceGivenPerceptron(k, brain1.getGivenPerceptron(k));
-                //child1.getPerceptronMap().put(k, Iterables.get(brain1.getPerceptronMap().values(),k));
+                child1.replaceGivenWeightByIndex(k,brain1.getGivenWeightByIndex(k));
             }
             for (int k = 0; k < cut2; k++) {
-                child2.replaceGivenPerceptron(k, brain2.getGivenPerceptron(k));
-                //child2.getPerceptronMap().put(k, Iterables.get(brain2.getPerceptronMap().values(),k));
+                child2.replaceGivenWeightByIndex(k,brain2.getGivenWeightByIndex(k));
             }
             for (int k = cut; k < brain1.getPerceptronCount(); k++) {
-                child2.replaceGivenPerceptron(k, brain1.getGivenPerceptron(k));
-                //child2.getPerceptronMap().put(k, Iterables.get(brain1.getPerceptronMap().values(),k));
+                child2.replaceGivenWeightByIndex(k,brain1.getGivenWeightByIndex(k));
             }
             for (int k = cut2; k < brain2.getPerceptronCount(); k++) {
-                child1.replaceGivenPerceptron(k, brain2.getGivenPerceptron(k));
-                //child1.getPerceptronMap().put(k, Iterables.get(brain2.getPerceptronMap().values(),k));
+                child1.replaceGivenWeightByIndex(k,brain2.getGivenWeightByIndex(k));
             }
             getGenePool().add(child1);
             getGenePool().add(child2);
         }
+        mutate();
         setGroupset(true);
         setGenerated(true);
     }
+    //TODO: napisz po prostu mase testow jednostkowych FFS daniel...
 
     public void createOffspringCorrect() {
         getRealFittest();
@@ -241,12 +245,11 @@ public class Genetics {
         pcPool = new ArrayList<>();
     }
 
-    //Narazie tego nie potrzebuje, dodam moze pozniej
     public void mutate() {
         for (int i = 0; i < getGenePool().size() - 1; i++) {
             for (int j = 0; j < getGenePool().get(i).getPerceptronCount()-1; j++) {
                 float temp = (float) getGenePool().get(i).getPerceptronCount();
-                float probability = 1 / temp;
+                float probability = 1f / 100f;
                 float random = ThreadLocalRandom.current().nextFloat();
                 if (random < probability) {
                     float mutation = ThreadLocalRandom.current().nextFloat();
@@ -256,7 +259,8 @@ public class Genetics {
                     }catch (Exception e){
                         e.printStackTrace();
                     }
-                    getGenePool().get(i).getGivenPerceptron(j).replacePerceptronWeight(mutationNumber, mutation);
+
+                    getGenePool().get(i).replaceGivenWeightByIndex(mutationNumber,mutation);
                 }
             }
         }
