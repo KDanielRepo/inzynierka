@@ -9,6 +9,9 @@ public class PerceptronTest {
     @Test
     public void sumTest(){
         Perceptron p = createPerceptron();
+        Float a = 10f;
+        p.normalize(a);
+        System.out.println(a);
         long start = System.nanoTime();
         p.calculateSum();
         long end = System.nanoTime();

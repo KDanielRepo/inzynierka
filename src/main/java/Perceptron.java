@@ -48,7 +48,7 @@ public class Perceptron {
 
     public Float calculateSum() {
         sum = 0f;
-        if(layer==0){
+        /*if(layer==0){
             for (int i = 0; i < inputs.size(); i++) {
                 sum+=Iterables.get(inputs.keys(),i)*(log2(Iterables.get(inputs.values(),i)));
             }
@@ -56,18 +56,19 @@ public class Perceptron {
             for (int i = 0; i < inputs.size(); i++) {
                 sum+=Iterables.get(inputs.keys(),i)*(normalize(Iterables.get(inputs.values(),i)));
             }
-        }
-        /*if (layer == 0) {
+        }*/
+        if (layer == 0) {
             inputs.entries().forEach(entry -> sum += (entry.getKey() * (log2(entry.getValue()))));
         } else {
             try {
-                inputs.entries().forEach(entry -> sum += (entry.getKey() * (normalize(entry.getValue()))));
+                inputs.entries().stream().map(entry -> sum +=(entry.getKey() * (normalize(entry.getValue())))).findFirst().orElse(null);
+                //inputs.entries().stream().forEach(entry -> sum +=(entry.getKey() * (normalize(entry.getValue()))));
             } catch (Exception e) {
                 System.out.println(inputs.size());
                 System.out.println(layer);
                 e.printStackTrace();
             }
-        }*/
+        }
         return sum;
     }
 
