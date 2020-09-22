@@ -30,7 +30,9 @@ public class Brain implements Comparable<Brain> {
     }
 
     public Multimap<Integer, Perceptron> getGivenLayer(int layer) {
-        return Iterables.get(getPerceptronMap().values(), layer);
+        Multimap<Integer,Perceptron> a = getPerceptronMap().get(layer).stream().findFirst().get();
+        return a;
+        //return Iterables.get(getPerceptronMap().values(), layer);
     }
 
     public Multimap<Integer, Float> getOutputLayer() {
@@ -136,7 +138,6 @@ public class Brain implements Comparable<Brain> {
     }
 
     //TODO: Pozbyc sie powtarzajacego sie kodu
-    //TODO: POPRAWIC WYDAJNOSC, predzej zdechne ze starosci niz to sie skonczy liczyc
     public void replaceGivenPerceptron(Integer index, Perceptron p) {
         int temp = 0;
         int tempLayer = 0;
@@ -197,7 +198,8 @@ public class Brain implements Comparable<Brain> {
                 for (Perceptron p : getGivenLayer(i).values()) {
                     int index = 0;
                     for (Perceptron pp : getGivenLayer(i - 1).values()) {
-                        p.replacePerceptronValue(index, pp.getOutput());
+                        float value = pp.getOutput();
+                        p.replacePerceptronValue(index, value);
                         index++;
                     }
                 }
@@ -207,9 +209,9 @@ public class Brain implements Comparable<Brain> {
 
     public void createDefaultPerceptronMap() {
         List<Integer> rows = Arrays.asList(8, 8, 8, 8, 4);
-        perceptronMap = ArrayListMultimap.create();
+        perceptronMap = HashMultimap.create();
         for (int k = 0; k < rows.size(); k++) {
-            Multimap<Integer, Perceptron> temp = ArrayListMultimap.create();
+            Multimap<Integer, Perceptron> temp = HashMultimap.create();
             for (int l = 0; l < rows.get(k); l++) {
                 Perceptron p = new Perceptron();
                 if (k == 0) {
@@ -222,7 +224,7 @@ public class Brain implements Comparable<Brain> {
                 } else {
                     for (Perceptron pp : getGivenLayer(k - 1).values()) {
                         Float weight = ThreadLocalRandom.current().nextFloat();
-                        p.getInputs().put(weight, pp.getOutput());
+                        p.getInputs().put(weight, 0f);
                         p.setLayer(k);
                     }
                 }

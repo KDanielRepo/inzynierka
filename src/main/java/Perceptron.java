@@ -2,11 +2,8 @@ import com.google.common.collect.HashMultimap;
 import com.google.common.collect.Iterables;
 import com.google.common.collect.Multimap;
 
-import javax.xml.bind.annotation.XmlAccessType;
-import javax.xml.bind.annotation.XmlAccessorType;
-import javax.xml.bind.annotation.XmlElement;
-import javax.xml.bind.annotation.XmlRootElement;
 import java.util.*;
+import java.util.concurrent.atomic.AtomicReference;
 import java.util.stream.Collectors;
 
 /*@XmlRootElement(name = "Perceptron")
@@ -48,25 +45,43 @@ public class Perceptron {
 
     public Float calculateSum() {
         sum = 0f;
-        /*if(layer==0){
-            for (int i = 0; i < inputs.size(); i++) {
-                sum+=Iterables.get(inputs.keys(),i)*(log2(Iterables.get(inputs.values(),i)));
-            }
-        }else{
-            for (int i = 0; i < inputs.size(); i++) {
-                sum+=Iterables.get(inputs.keys(),i)*(normalize(Iterables.get(inputs.values(),i)));
-            }
-        }*/
         if (layer == 0) {
-            inputs.entries().forEach(entry -> sum += (entry.getKey() * (log2(entry.getValue()))));
+            /*Iterator iterator = inputs.values().iterator();
+            Iterator iterator2 = inputs.keys().iterator();
+            int a = 0;
+            while (iterator.hasNext() && iterator2.hasNext()){
+                try{
+                    Float b = (float)iterator.next();
+                    Float c = (float)iterator2.next();
+                    sum += c * (log2(b));
+                    a++;
+                }catch (Exception e){
+                    System.out.println("NEIN");
+                }
+            }*/
+            if(!inputs.isEmpty()){
+                inputs.entries().forEach(entry -> sum += (entry.getKey() * (log2(entry.getValue()))));
+            }else{
+                System.out.println("aaaaaaaa");
+            }
         } else {
-            try {
-                inputs.entries().stream().map(entry -> sum +=(entry.getKey() * (normalize(entry.getValue())))).findFirst().orElse(null);
-                //inputs.entries().stream().forEach(entry -> sum +=(entry.getKey() * (normalize(entry.getValue()))));
-            } catch (Exception e) {
-                System.out.println(inputs.size());
-                System.out.println(layer);
-                e.printStackTrace();
+            /*Iterator iterator = inputs.values().iterator();
+            Iterator iterator2 = inputs.keys().iterator();
+            int a = 0;
+            while (iterator.hasNext() && iterator2.hasNext()){
+                try{
+                    Float b = (float)iterator.next();
+                    Float c = (float)iterator2.next();
+                    sum += c * (normalize(b));
+                    a++;
+                }catch (Exception e){
+                    System.out.println("NEIN");
+                }
+            }*/
+            if(!inputs.isEmpty()){
+                inputs.entries().forEach(entry -> sum += (entry.getKey() * (normalize(entry.getValue()))));
+            }else{
+                System.out.println("aaaaaaaa");
             }
         }
         return sum;
@@ -77,11 +92,15 @@ public class Perceptron {
     }
 
     public void replacePerceptronValue(int index, float value) {
-        try {
-            Iterable iter = Arrays.asList(value);
-            inputs.replaceValues(Iterables.get(inputs.keys(), index), iter);
-        } catch (Exception e) {
-            System.out.println(index);
+        if(!inputs.isEmpty()){
+            float key = Iterables.get(inputs.keys(), index);
+            inputs.replaceValues(key, Arrays.asList(value));
+            Multimap<Float, Float> tempMap = HashMultimap.create();
+            inputs.entries().forEach(e->tempMap.put(e.getKey(),e.getValue()));
+            tempMap.replaceValues(key,Arrays.asList(value));
+            setInputs(tempMap);
+        }else{
+            System.out.println("AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA");
         }
         //getInputs().replaceValues(Iterables.get(getInputs().keys(), index),Arrays.asList(value));
         /*Multimap<Float, Float> tempMap = HashMultimap.create();

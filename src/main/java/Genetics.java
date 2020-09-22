@@ -58,7 +58,7 @@ public class Genetics {
         //krzyzowanie
         int[] a = new int[population];
         System.out.println("rozmiar pc: " + getPcPool().size());
-        int weights = 0;
+        int weights = 0;//getPcPool().get(0).getPerceptronCount();
         for (int j = 0; j <getPcPool().get(0).getPerceptronMap().values().size() ; j++) {
             for (int k = 0; k <getPcPool().get(0).getGivenLayer(j).values().size() ; k++) {
                 for (int l = 0; l <getPcPool().get(0).getGivenPerceptron(k).getInputs().keys().size() ; l++) {
@@ -98,15 +98,19 @@ public class Genetics {
             int cut2 = ThreadLocalRandom.current().nextInt(1, upperHalf.intValue());
 
             for (int k = 0; k < cut; k++) {
+                //child1.replaceGivenPerceptron(k,brain1.getGivenPerceptron(k));
                 child1.replaceGivenWeightByIndex(k,brain1.getGivenWeightByIndex(k));
             }
             for (int k = 0; k < cut2; k++) {
+                //child2.replaceGivenPerceptron(k,brain2.getGivenPerceptron(k));
                 child2.replaceGivenWeightByIndex(k,brain2.getGivenWeightByIndex(k));
             }
             for (int k = cut; k < brain1.getPerceptronCount(); k++) {
+                //child2.replaceGivenPerceptron(k,brain1.getGivenPerceptron(k));
                 child2.replaceGivenWeightByIndex(k,brain1.getGivenWeightByIndex(k));
             }
             for (int k = cut2; k < brain2.getPerceptronCount(); k++) {
+                //child1.replaceGivenPerceptron(k,brain1.getGivenPerceptron(k));
                 child1.replaceGivenWeightByIndex(k,brain2.getGivenWeightByIndex(k));
             }
             getGenePool().add(child1);
