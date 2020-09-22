@@ -174,6 +174,7 @@ public class GameInstance extends Thread {
             }
         }
     }
+    //TODO: upewnij sie ze sama gra dziala 100% poprawnie, moze jakies testy??
 
     public void checkGameOver() {
         int test = 0;

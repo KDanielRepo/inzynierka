@@ -55,7 +55,7 @@ public class BrainTest {
     public void updatePerceptronValuesTest(){
         Brain brain = createBrain();
         System.out.println(brain.getOutputLayer().values());
-        brain.getGivenPerceptron(0).replacePerceptronValue(0,15);
+        brain.getGivenPerceptron(0).replacePerceptronValue(0,15f);
         long start = System.nanoTime();
         brain.updatePerceptronValues();
         long end = System.nanoTime();

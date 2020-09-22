@@ -30,7 +30,7 @@ public class Brain implements Comparable<Brain> {
     }
 
     public Multimap<Integer, Perceptron> getGivenLayer(int layer) {
-        Multimap<Integer,Perceptron> a = getPerceptronMap().get(layer).stream().findFirst().get();
+        Multimap<Integer, Perceptron> a = getPerceptronMap().get(layer).stream().findFirst().get();
         return a;
         //return Iterables.get(getPerceptronMap().values(), layer);
     }
@@ -87,11 +87,7 @@ public class Brain implements Comparable<Brain> {
                         tempIndex--;
                     }
                 }
-                if (i < getPerceptronMap().values().size() - 1) {
-                    tempMult += getGivenLayer(i).values().size();
-                } else {
-                    tempMult += getGivenLayer(i).values().size() - 1;
-                }
+                tempMult += getGivenLayer(i).values().size();
             }
         } else if (index != 0 && index < getGivenLayer(0).values().size()) {
             for (int i = 0; i < getGivenLayer(0).values().size(); i++) {
@@ -118,11 +114,7 @@ public class Brain implements Comparable<Brain> {
                         tempIndex--;
                     }
                 }
-                if (i < getPerceptronMap().values().size() - 1) {
-                    tempMult += getGivenLayer(i).values().size();
-                } else {
-                    tempMult += getGivenLayer(i).values().size() - 1;
-                }
+                tempMult += getGivenLayer(i).values().size();
             }
         } else if (index != 0 && index < getGivenLayer(0).values().size()) {
             for (int k = 0; k < getGivenPerceptron(0).getInputs().values().size(); k++) {

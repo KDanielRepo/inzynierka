@@ -120,7 +120,7 @@ public class BrainController {
     public void clearBlocks(){
         Multimap<Integer,Perceptron> p = getBrain().getPerceptronMap().get(0).stream().findFirst().get();
         Multimaps.filterKeys(p,between(14,20)).values().stream().forEach(e->{
-            e.replacePerceptronValue(0,0);
+            e.replacePerceptronValue(0,0f);
         });
     }
 

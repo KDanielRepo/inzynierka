@@ -159,13 +159,14 @@ public class Genetics {
                 }
             }
         }
-        for (int i = 0; i < getPcPool().size()/2; i++) {
+        for (int i = 0; i < getPcPool().size(); i++) {
             int random = ThreadLocalRandom.current().nextInt(0, population/2);
             if (a[random] == 0) {
                 a[random] = 1;
             } else {
                 while (a[random] != 0) {
                     random = ThreadLocalRandom.current().nextInt(0, population/2);
+                    //System.out.println("zły random 1");
                 }
             }
             Brain brain1 = getPcPool().get(random);
@@ -175,6 +176,7 @@ public class Genetics {
             } else {
                 while (a[random2] != 0) {
                     random2 = ThreadLocalRandom.current().nextInt(0, population/2);
+                    //System.out.println("zły random 2");
                 }
             }
             Brain brain2 = getPcPool().get(random2);
@@ -208,8 +210,9 @@ public class Genetics {
             }
             getGenePool().add(child1);
             getGenePool().add(child2);
-            getGenePool().add(brain1);
-            getGenePool().add(brain2);
+            //getGenePool().add(brain1);
+            //getGenePool().add(brain2);
+            /*System.out.println("dodano child nr: "+i);*/
         }
         System.out.println("rozmiar pc: " + getPcPool().size());
         System.out.println("gp to: "+getGenePool().size());
