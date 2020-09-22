@@ -89,7 +89,7 @@ public class BrainController {
         int i = 0;
         for (Perceptron p : brain.getGivenLayer(0).values()) {
                 p.replacePerceptronValue(i, list.get(i).floatValue());
-                p.activation();
+                //p.activation();
             i++;
         }
         brain.updatePerceptronValues();

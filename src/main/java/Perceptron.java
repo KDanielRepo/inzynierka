@@ -24,7 +24,12 @@ public class Perceptron {
     }
 
     public Float activation() {
-        calculateSum();
+        sum = 0f;
+        if (layer == 0) {
+            inputs.entries().forEach(entry -> sum += (entry.getKey() * (log2(entry.getValue()))));
+        } else {
+            inputs.entries().forEach(entry -> sum += (entry.getKey() * (normalize(entry.getValue()))));
+        }
         if (sum < 0) {
             Double a = (alpha * Math.exp(sum) - alpha) * lambda;
             return output = a.floatValue();
@@ -46,43 +51,9 @@ public class Perceptron {
     public Float calculateSum() {
         sum = 0f;
         if (layer == 0) {
-            /*Iterator iterator = inputs.values().iterator();
-            Iterator iterator2 = inputs.keys().iterator();
-            int a = 0;
-            while (iterator.hasNext() && iterator2.hasNext()){
-                try{
-                    Float b = (float)iterator.next();
-                    Float c = (float)iterator2.next();
-                    sum += c * (log2(b));
-                    a++;
-                }catch (Exception e){
-                    System.out.println("NEIN");
-                }
-            }*/
-            if(!inputs.isEmpty()){
-                inputs.entries().forEach(entry -> sum += (entry.getKey() * (log2(entry.getValue()))));
-            }else{
-                System.out.println("aaaaaaaa");
-            }
+            inputs.entries().forEach(entry -> sum += (entry.getKey() * (log2(entry.getValue()))));
         } else {
-            /*Iterator iterator = inputs.values().iterator();
-            Iterator iterator2 = inputs.keys().iterator();
-            int a = 0;
-            while (iterator.hasNext() && iterator2.hasNext()){
-                try{
-                    Float b = (float)iterator.next();
-                    Float c = (float)iterator2.next();
-                    sum += c * (normalize(b));
-                    a++;
-                }catch (Exception e){
-                    System.out.println("NEIN");
-                }
-            }*/
-            if(!inputs.isEmpty()){
-                inputs.entries().forEach(entry -> sum += (entry.getKey() * (normalize(entry.getValue()))));
-            }else{
-                System.out.println("aaaaaaaa");
-            }
+            inputs.entries().forEach(entry -> sum += (entry.getKey() * (normalize(entry.getValue()))));
         }
         return sum;
     }
@@ -92,16 +63,12 @@ public class Perceptron {
     }
 
     public void replacePerceptronValue(int index, float value) {
-        if(!inputs.isEmpty()){
-            float key = Iterables.get(inputs.keys(), index);
-            inputs.replaceValues(key, Arrays.asList(value));
-            Multimap<Float, Float> tempMap = HashMultimap.create();
-            inputs.entries().forEach(e->tempMap.put(e.getKey(),e.getValue()));
-            tempMap.replaceValues(key,Arrays.asList(value));
-            setInputs(tempMap);
-        }else{
-            System.out.println("AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA");
-        }
+        float key = Iterables.get(inputs.keys(), index);
+        inputs.replaceValues(key, Arrays.asList(value));
+        Multimap<Float, Float> tempMap = HashMultimap.create();
+        inputs.entries().forEach(e -> tempMap.put(e.getKey(), e.getValue()));
+        tempMap.replaceValues(key, Arrays.asList(value));
+        setInputs(tempMap);
         //getInputs().replaceValues(Iterables.get(getInputs().keys(), index),Arrays.asList(value));
         /*Multimap<Float, Float> tempMap = HashMultimap.create();
         for (int i = 0; i < inputs.size(); i++) {
@@ -134,7 +101,18 @@ public class Perceptron {
     }
 
     public Float getOutput() {
-        activation();
+        sum = 0f;
+        if (layer == 0) {
+            inputs.entries().forEach(entry -> sum += (entry.getKey() * (log2(entry.getValue()))));
+        } else {
+            inputs.entries().forEach(entry -> sum += (entry.getKey() * (normalize(entry.getValue()))));
+        }
+        if (sum < 0) {
+            Double a = (alpha * Math.exp(sum) - alpha) * lambda;
+            output = a.floatValue();
+        } else {
+            output = sum * lambda;
+        }
         return output;
     }
 

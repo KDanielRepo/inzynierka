@@ -37,7 +37,7 @@ public class Genetics {
         }
         //wybieranie osobnikow do puli c
         List<Brain> sorted = getGenePool().stream().sorted(Comparator.comparing(Brain::getPc).reversed()).collect(Collectors.toList());
-        for (int i = 0; i < sorted.size() - 1; i++) {
+        for (int i = 0; i < sorted.size(); i++) {
             if (getPcPool().size() < population) {
                 getPcPool().add(sorted.get(i));
                 sorted.remove(i);
@@ -130,7 +130,7 @@ public class Genetics {
         }
         //wybieranie osobnikow do puli c
         List<Brain> sorted = getGenePool().stream().sorted(Comparator.comparing(Brain::getPc).reversed()).collect(Collectors.toList());
-        for (int i = 0; i < (sorted.size() - 1) / 2; i++) {
+        for (int i = 0; i < sorted.size() / 2; i++) {
             if (getPcPool().size() < population) {
                 getPcPool().add(sorted.get(i));
                 sorted.remove(i);
@@ -138,7 +138,7 @@ public class Genetics {
         }
         setGenePool(sorted);
         //uzupelnienie puli do liczby parzystej
-        while (getPcPool().size() < population || getPcPool().size() % 2 != 0) {
+        while (getPcPool().size() < population/2 || getPcPool().size() % 2 != 0) {
             int random = ThreadLocalRandom.current().nextInt(0, getGenePool().size());
             getPcPool().add(getGenePool().get(random));
             getGenePool().remove(random);
@@ -150,53 +150,70 @@ public class Genetics {
         }
         setGenePool(new ArrayList<>());
         //krzyzowanie
-        int[] a = new int[population];
-        System.out.println("rozmiar pc: " + getPcPool().size());
-        for (int i = 0; i < getPcPool().size() / 2; i++) {
-            int random = ThreadLocalRandom.current().nextInt(0, population);
+        int[] a = new int[population/2];
+        int weights = 0;//getPcPool().get(0).getPerceptronCount();
+        for (int j = 0; j <getPcPool().get(0).getPerceptronMap().values().size() ; j++) {
+            for (int k = 0; k <getPcPool().get(0).getGivenLayer(j).values().size() ; k++) {
+                for (int l = 0; l <getPcPool().get(0).getGivenPerceptron(k).getInputs().keys().size() ; l++) {
+                    weights++;
+                }
+            }
+        }
+        for (int i = 0; i < getPcPool().size()/2; i++) {
+            int random = ThreadLocalRandom.current().nextInt(0, population/2);
             if (a[random] == 0) {
                 a[random] = 1;
             } else {
                 while (a[random] != 0) {
-                    random = ThreadLocalRandom.current().nextInt(0, population);
+                    random = ThreadLocalRandom.current().nextInt(0, population/2);
                 }
             }
             Brain brain1 = getPcPool().get(random);
-            int random2 = ThreadLocalRandom.current().nextInt(0, population);
+            int random2 = ThreadLocalRandom.current().nextInt(0, population/2);
             if (a[random2] == 0) {
                 a[random2] = 1;
             } else {
                 while (a[random2] != 0) {
-                    random2 = ThreadLocalRandom.current().nextInt(0, population);
+                    random2 = ThreadLocalRandom.current().nextInt(0, population/2);
                 }
             }
             Brain brain2 = getPcPool().get(random2);
             Brain child1 = new Brain();
             child1.createDefaultPerceptronMap();
+            child1.setPerceptronMap(brain1.getPerceptronMap());
             Brain child2 = new Brain();
             child2.createDefaultPerceptronMap();
+            child2.setPerceptronMap(brain2.getPerceptronMap());
 
-            Double lowerHalf = Math.floor((double) brain1.getPerceptronCount() / 2);
-            Double upperHalf = Math.ceil((double) brain2.getPerceptronCount() / 2);
+            Double lowerHalf = Math.floor((double) weights / 2);
+            Double upperHalf = Math.ceil((double) weights / 2);
             int cut = ThreadLocalRandom.current().nextInt(1, lowerHalf.intValue());
             int cut2 = ThreadLocalRandom.current().nextInt(1, upperHalf.intValue());
 
             for (int k = 0; k < cut; k++) {
-                child1.replaceGivenPerceptron(k, brain1.getGivenPerceptron(k));
+                //child1.replaceGivenPerceptron(k, brain1.getGivenPerceptron(k));
+                child1.replaceGivenWeightByIndex(k,brain1.getGivenWeightByIndex(k));
             }
             for (int k = 0; k < cut2; k++) {
-                child2.replaceGivenPerceptron(k, brain2.getGivenPerceptron(k));
+                //child2.replaceGivenPerceptron(k, brain2.getGivenPerceptron(k));
+                child2.replaceGivenWeightByIndex(k,brain2.getGivenWeightByIndex(k));
             }
             for (int k = cut; k < brain1.getPerceptronCount(); k++) {
-                child2.replaceGivenPerceptron(k, brain1.getGivenPerceptron(k));
+                //child2.replaceGivenPerceptron(k, brain1.getGivenPerceptron(k));
+                child2.replaceGivenWeightByIndex(k,brain2.getGivenWeightByIndex(k));
             }
             for (int k = cut2; k < brain2.getPerceptronCount(); k++) {
-                child1.replaceGivenPerceptron(k, brain2.getGivenPerceptron(k));
+                //child1.replaceGivenPerceptron(k, brain2.getGivenPerceptron(k));
+                child1.replaceGivenWeightByIndex(k,brain2.getGivenWeightByIndex(k));
             }
             getGenePool().add(child1);
             getGenePool().add(child2);
+            getGenePool().add(brain1);
+            getGenePool().add(brain2);
         }
-        //mutate();
+        System.out.println("rozmiar pc: " + getPcPool().size());
+        System.out.println("gp to: "+getGenePool().size());
+        mutate();
         setGroupset(true);
         setGenerated(true);
     }
