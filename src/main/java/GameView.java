@@ -12,6 +12,8 @@ import javafx.scene.layout.VBox;
 import javafx.scene.paint.Color;
 import javafx.stage.Stage;
 
+import java.io.File;
+import java.io.IOException;
 import java.time.ZonedDateTime;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -20,6 +22,7 @@ import java.util.concurrent.atomic.AtomicInteger;
 
 public class GameView extends Application {
     private GameInstance[] instances;
+    private BrainExporter brainExporter;
     private Genetics genetics;
     private Mutex mutex;
 
@@ -56,6 +59,7 @@ public class GameView extends Application {
     public void start(Stage primaryStage) throws Exception {
         //OBIEKTY
         genetics = new Genetics();
+        brainExporter = new BrainExporter();
         mutex = new Mutex();
         genetics.setMutex(mutex);
         index = 0;
@@ -107,9 +111,29 @@ public class GameView extends Application {
                 instances[i].setSelectedAsView(false);
             }
         });
+        Button exportBrains = new Button("Export current brains");
+        exportBrains.setOnAction(e->{
+            for (int i = 0; i < genetics.getGenePool().size(); i++) {
+                try {
+                    brainExporter.exportBrainToCsf(new File("brainGenes"+i),genetics.getGenePool().get(i));
+                } catch (IOException e1) {
+                    e1.printStackTrace();
+                }
+            }
+        });
+        Button importBrains = new Button("Import into current brains");
+        importBrains.setOnAction(e->{
+            for (int i = 0; i < genetics.getGenePool().size(); i++) {
+                try {
+                    brainExporter.importBrainFromCsf(new File("brainGenes"+i),genetics.getGenePool().get(i));
+                } catch (IOException e1) {
+                    e1.printStackTrace();
+                }
+            }
+        });
 
         toolbox = new VBox();
-        toolbox.getChildren().addAll(instanceNumberLabel, instanceNumber, createInstancesButton,startInstancesButton,noInstanceButton,delayLabel,delayField,delayButton,pauseButton);
+        toolbox.getChildren().addAll(instanceNumberLabel, instanceNumber, createInstancesButton,startInstancesButton,noInstanceButton,delayLabel,delayField,delayButton,pauseButton,exportBrains,importBrains);
         borderPane.setCenter(gameArea);
         borderPane.setRight(toolbox);
 
@@ -374,6 +398,7 @@ public class GameView extends Application {
             System.out.println(ZonedDateTime.now());
             setIndex(0);
             setGenerationIndex(getGenerationIndex() + 1);
+            genetics.setCurrentGeneration(getGenerationIndex());
             setFinishedInstances(0);
             System.out.println("---------------------------");
         }

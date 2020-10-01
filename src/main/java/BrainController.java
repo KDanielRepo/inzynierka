@@ -82,14 +82,15 @@ public class BrainController {
     }
 
     public void setCurrentInputs(Integer[][] matrix) {
-        List<Integer> list = new ArrayList<>();
+        List<Float> list = new ArrayList<>();
         for (Integer[] i : matrix) {
-            list.addAll(Arrays.asList(i));
+            for (Integer j : i) {
+                list.add(j.floatValue());
+            }
         }
         int i = 0;
         for (Perceptron p : brain.getGivenLayer(0).values()) {
-                p.replacePerceptronValue(i, list.get(i).floatValue());
-                //p.activation();
+                p.replacePerceptronValues(i, list);
             i++;
         }
         brain.updatePerceptronValues();

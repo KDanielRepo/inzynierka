@@ -185,18 +185,28 @@ public class Brain implements Comparable<Brain> {
     }
 
     public void updatePerceptronValues() {
+        List<Float> outputs = new ArrayList<>();
+        int size = 0;
+        for (int i = 0; i < getPerceptronMap().size(); i++) {
+            if (i > 0) {
+                for (int j = 0; j < getGivenLayer(i).size();j++) {
+                    outputs.add(getGivenPerceptron(j+size).getOutput());
+                }
+            }
+            size+=getGivenLayer(i).size();
+        }
+        int iter = 0;
         for (int i = 0; i < getPerceptronMap().values().size(); i++) {
             if (i > 0) {
+                int index = 0;
                 for (Perceptron p : getGivenLayer(i).values()) {
-                    int index = 0;
-                    for (Perceptron pp : getGivenLayer(i - 1).values()) {
-                        float value = pp.getOutput();
-                        p.replacePerceptronValue(index, value);
-                        index++;
-                    }
+                    p.replacePerceptronValue(index, outputs.get(iter));
+                    index++;
+                    iter++;
                 }
             }
         }
+
     }
 
     public void createDefaultPerceptronMap() {

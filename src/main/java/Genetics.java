@@ -16,13 +16,15 @@ public class Genetics {
     private Mutex mutex;
     private boolean groupset;
     private boolean generated;
+    private int currentGeneration;
 
     public Genetics() {
         best = new Brain();
         bestBrains = new ArrayList<>();
-        population = 100;
+        population = 400;
         generation = 500;
         groupset = false;
+        currentGeneration = 0;
     }
 
     public Genetics(int population) {
@@ -124,6 +126,7 @@ public class Genetics {
 
     public void createOffspringCorrect() {
         getRealFittest();
+        replaceWorstBrains();
         //ustawianie PC kazdego osobnika
         for (int i = 0; i < getGenePool().size(); i++) {
             getGenePool().get(i).setPc(ThreadLocalRandom.current().nextFloat() * getGenePool().get(i).getScore());
@@ -273,7 +276,7 @@ public class Genetics {
         for (int i = 0; i < getGenePool().size() - 1; i++) {
             for (int j = 0; j < getGenePool().get(i).getPerceptronCount()-1; j++) {
                 float temp = (float) getGenePool().get(i).getPerceptronCount();
-                float probability = 1f / 100f;
+                float probability = 1f / 50f *(0.1f * getCurrentGeneration());
                 float random = ThreadLocalRandom.current().nextFloat();
                 if (random < probability) {
                     float mutation = ThreadLocalRandom.current().nextFloat();
@@ -334,6 +337,16 @@ public class Genetics {
     public void getRealFittest() {
         List<Brain> sorted = getGenePool().stream().sorted(Comparator.comparing(Brain::getScore).reversed()).collect(Collectors.toList());
         best = sorted.get(0);
+    }
+
+    public void replaceWorstBrains(){
+        List<Brain> sorted = getGenePool().stream().sorted(Comparator.comparing(Brain::getScore)).collect(Collectors.toList());
+        for (int i = 0; i < 10; i++) {
+            Brain brain = new Brain();
+            brain.createDefaultPerceptronMap();
+            sorted.remove(sorted.get(i));
+            sorted.add(brain);
+        }
     }
 
     public void getTwoFittest() {
@@ -483,5 +496,13 @@ public class Genetics {
         } finally {
             mutex.unlock();
         }
+    }
+
+    public int getCurrentGeneration() {
+        return currentGeneration;
+    }
+
+    public void setCurrentGeneration(int currentGeneration) {
+        this.currentGeneration = currentGeneration;
     }
 }

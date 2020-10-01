@@ -62,31 +62,19 @@ public class Perceptron {
         return ((value - 1) / (200 - 1)) * (1 - 0) + 0;
     }
 
+    public void replacePerceptronValues(int index, List<Float> values) {
+        Float a = Iterables.get(inputs.keys(), index);
+        inputs.replaceValues(a, values);
+    }
+
     public void replacePerceptronValue(int index, Float value) {
-        try{
-            Float val = Iterables.get(inputs.values(), index);
-            Float key = inputs.entries().stream().filter(entry -> val.equals(entry.getValue())).map(Map.Entry::getKey).findFirst().get();
-            inputs.replaceValues(key, Arrays.asList(value));
-        }catch (Exception e){
+        try {
+            /*Float val = Iterables.get(inputs.values(), index);
+            Float key = inputs.entries().stream().filter(entry -> val.equals(entry.getValue())).map(Map.Entry::getKey).findFirst().get();*/
+            inputs.replaceValues(Iterables.get(inputs.keys(), index), Arrays.asList(value));
+        } catch (Exception e) {
             e.printStackTrace();
         }
-        /*Multimap<Float, Float> tempMap = HashMultimap.create();
-        inputs.entries().forEach(e -> tempMap.put(e.getKey(), e.getValue()));
-        tempMap.replaceValues(key, Arrays.asList(value));
-        setInputs(tempMap);*/
-        //getInputs().replaceValues(Iterables.get(getInputs().keys(), index),Arrays.asList(value));
-        /*Multimap<Float, Float> tempMap = HashMultimap.create();
-        for (int i = 0; i < inputs.size(); i++) {
-            if (i != index) {
-                tempMap.put(Iterables.get(inputs.keys(), i), Iterables.get(inputs.values(), i));
-            } else {
-                tempMap.put(Iterables.get(inputs.keys(), i), value);
-            }
-        }
-        if (output == Iterables.get(inputs.values(), 0)) {
-            output = Iterables.get(tempMap.values(), 0);
-        }
-        setInputs(tempMap);*/
     }
 
     public void replacePerceptronWeight(int index, float weight) {
@@ -98,6 +86,17 @@ public class Perceptron {
                 tempMap.put(weight, Iterables.get(inputs.values(), i));
             }
 
+        }
+        if (output == Iterables.get(inputs.values(), 0)) {
+            output = Iterables.get(tempMap.values(), 0);
+        }
+        setInputs(tempMap);
+    }
+
+    public void replacePerceptronWeights(List<Float> weights) {
+        Multimap<Float, Float> tempMap = HashMultimap.create();
+        for (int i = 0; i < inputs.keys().size(); i++) {
+            tempMap.put(weights.get(i), Iterables.get(inputs.values(), i));
         }
         if (output == Iterables.get(inputs.values(), 0)) {
             output = Iterables.get(tempMap.values(), 0);
@@ -193,7 +192,8 @@ public class Perceptron {
     public void setSum(Float sum) {
         this.sum = sum;
     }
-//TODO: mozliwe ze gdzies w trakcie podmiany wag albo wartosci zmniejszana jest ilosc polaczen, postestuj
+
+    //TODO: mozliwe ze gdzies w trakcie podmiany wag albo wartosci zmniejszana jest ilosc polaczen, postestuj
     public Float getWeight(int index) {
         return Iterables.get(inputs.keys(), index);
 

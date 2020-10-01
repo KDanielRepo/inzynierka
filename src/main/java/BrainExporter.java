@@ -2,8 +2,10 @@ import javax.xml.bind.JAXBContext;
 import javax.xml.bind.JAXBException;
 import javax.xml.bind.Marshaller;
 import javax.xml.bind.Unmarshaller;
-import java.io.File;
-import java.io.IOException;
+import java.io.*;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.List;
 
 //<brain>
 //  <layer>
@@ -20,20 +22,43 @@ import java.io.IOException;
 //  </layer>
 //</brain>
 public class BrainExporter {
-    public void exportBrainToXml(File file, Brain brain) throws IOException, JAXBException {
-        if(!file.exists()){
+    public void exportBrainToCsf(File file, Brain brain) throws IOException {
+        if (!file.exists()) {
             file.createNewFile();
         }
-        JAXBContext jaxbContext = JAXBContext.newInstance(Brain.class);
-        Marshaller marshaller = jaxbContext.createMarshaller();
-        marshaller.setProperty(Marshaller.JAXB_FORMATTED_OUTPUT,true);
-        marshaller.marshal(brain,file);
+        String text = "";
+        for (int i = 0; i < brain.getPerceptronCount(); i++) {
+            for (int j = 0; j < brain.getGivenPerceptron(i).getWeights().size(); j++) {
+                text += brain.getGivenPerceptron(i).getWeight(j);
+                text += "'";
+            }
+            text += ";";
+        }
+        FileWriter fileWriter = new FileWriter(file);
+        BufferedWriter bufferedWriter = new BufferedWriter(fileWriter);
+        bufferedWriter.write(text);
+        bufferedWriter.flush();
+        bufferedWriter.close();
+        fileWriter.close();
     }
 
-    public Brain importBrainFromXml(File file, Brain brain) throws JAXBException {
-        JAXBContext jaxbContext = JAXBContext.newInstance(Brain.class);
-        Unmarshaller unmarshaller = jaxbContext.createUnmarshaller();
-        return brain = (Brain) unmarshaller.unmarshal(file);
+    public void importBrainFromCsf(File file, Brain brain) throws IOException {
+        //1'2'3'4'5';1'2'3;
+        FileReader fileReader = new FileReader(file);
+        BufferedReader bufferedReader = new BufferedReader(fileReader);
+        List<String> weights = new ArrayList<>();
+        String text = bufferedReader.readLine();
+        weights.addAll(Arrays.asList(text.split(";")));
+        List<String> perceptronWeights;
+
+        for (int i = 0; i < weights.size(); i++) {
+            perceptronWeights = Arrays.asList(weights.get(i).split("'"));
+            List<Float> floats = new ArrayList<>();
+            for (int j = 0; j < perceptronWeights.size(); j++) {
+                floats.add(Float.parseFloat(perceptronWeights.get(j)));
+            }
+            brain.getGivenPerceptron(i).replacePerceptronWeights(floats);
+        }
     }
 
 

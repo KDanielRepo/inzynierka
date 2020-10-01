@@ -10,12 +10,25 @@ import java.io.IOException;
 public class BrainExporterTest {
 
     @Test
-    public void exportToXmlTest(){
-
+    public void exportToCsfTest(){
+        Brain brain = createBrain();
+        BrainExporter brainExporter = new BrainExporter();
+        try {
+            brainExporter.exportBrainToCsf(new File("brainWeight.csf"),brain);
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
     }
 
     @Test
-    public void importFromXmlTest(){
+    public void importFromCsfTest(){
+        Brain brain = createBrain();
+        BrainExporter brainExporter = new BrainExporter();
+        try {
+            brainExporter.importBrainFromCsf(new File("brainWeight.csf"),brain);
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
 
     }
 

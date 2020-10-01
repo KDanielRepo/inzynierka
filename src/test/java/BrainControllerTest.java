@@ -5,7 +5,9 @@ import org.junit.runner.RunWith;
 import org.junit.runners.JUnit4;
 
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.Map;
+import java.util.Set;
 import java.util.concurrent.ThreadLocalRandom;
 
 @RunWith(JUnit4.class)
@@ -13,7 +15,7 @@ public class BrainControllerTest {
 
     @Test
     public void trashTest(){
-        Multimap map = HashMultimap.create();
+        Multimap<String,Integer> map = HashMultimap.create();
 
         map.put("game", 1);
         map.put("game", 2);
@@ -21,10 +23,10 @@ public class BrainControllerTest {
         map.put("book", 4);
         map.put("book", 3);
 
-        Iterable iter = map.get("book");
+        /*Iterable iter = map.get("book");
         map.replaceValues("game", iter);
 
-        System.out.println(map);
+        System.out.println(map);*/
     }
 
     @Test
