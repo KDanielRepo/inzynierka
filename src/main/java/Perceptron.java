@@ -1,13 +1,6 @@
-import com.google.common.collect.HashMultimap;
-import com.google.common.collect.Iterables;
-import com.google.common.collect.Multimap;
-
 import java.util.*;
-import java.util.concurrent.atomic.AtomicReference;
 import java.util.stream.Collectors;
 
-/*@XmlRootElement(name = "Perceptron")
-@XmlAccessorType(XmlAccessType.FIELD)*/
 public class Perceptron {
     private List<Dendrite> inputs;
     private Dendrite output;
@@ -15,19 +8,19 @@ public class Perceptron {
     private int layer;
     private final Float lambda = 1.0507f;
     private final Float alpha = 1.6732f;
-    //private Mutex mutex;
 
     public Perceptron() {
         inputs = new ArrayList<>();
+        output = new Dendrite();
         sum = 0f;
     }
 
     public void activation() {
         sum = 0f;
         if (layer == 0) {
-            inputs.stream().forEach(entry-> sum += entry.getWeight() * (log2(entry.getValue())));
+            inputs.forEach(entry-> sum += entry.getWeight() * (log2(entry.getValue())));
         } else {
-            inputs.stream().forEach(entry-> sum += entry.getWeight() * (normalize(entry.getValue())));
+            inputs.forEach(entry-> sum += entry.getWeight() * (normalize(entry.getValue())));
         }
         if (sum < 0) {
             Double a = (alpha * Math.exp(sum) - alpha) * lambda;
@@ -50,9 +43,9 @@ public class Perceptron {
     public Float calculateSum() {
         sum = 0f;
         if (layer == 0) {
-            inputs.entries().forEach(entry -> sum += (entry.getKey() * (log2(entry.getValue()))));
+            inputs.forEach(input-> sum += input.getWeight() * log2(input.getValue()));
         } else {
-            inputs.entries().forEach(entry -> sum += (entry.getKey() * (normalize(entry.getValue()))));
+            inputs.forEach(input-> sum += input.getWeight() * normalize(input.getValue()));
         }
         return sum;
     }
@@ -61,77 +54,45 @@ public class Perceptron {
         return ((value - 1) / (200 - 1)) * (1 - 0) + 0;
     }
 
-    public void replacePerceptronValues(int index, List<Float> values) {
-        Float a = Iterables.get(inputs.keys(), index);
-        inputs.replaceValues(a, values);
+    public void replacePerceptronValues(List<Float> values) {
+        for (int i = 0; i < values.size(); i++) {
+            inputs.get(i).setValue(values.get(i));
+        }
     }
 
     public void replacePerceptronValue(int index, Float value) {
-        try {
-            /*Float val = Iterables.get(inputs.values(), index);
-            Float key = inputs.entries().stream().filter(entry -> val.equals(entry.getValue())).map(Map.Entry::getKey).findFirst().get();*/
-            try{
-                inputs.replaceValues(Iterables.get(inputs.keys(), index), Arrays.asList(value));
-            }catch (Exception e){
-                e.printStackTrace();
-            }
-        } catch (Exception e) {
-            e.printStackTrace();
-        }
+        inputs.get(index).setValue(value);
     }
 
     public void replacePerceptronWeight(int index, float weight) {
-        Multimap<Float, Float> tempMap = HashMultimap.create();
-        for (int i = 0; i < inputs.keys().size(); i++) {
-            if (i != index) {
-                tempMap.put(Iterables.get(inputs.keys(), i), Iterables.get(inputs.values(), i));
-            } else {
-                tempMap.put(weight, Iterables.get(inputs.values(), i));
-            }
-
-        }
-        if (output == Iterables.get(inputs.values(), 0)) {
-            output = Iterables.get(tempMap.values(), 0);
-        }
-        setInputs(tempMap);
+        inputs.get(index).setWeight(weight);
     }
 
     public void replacePerceptronWeights(List<Float> weights) {
-        Multimap<Float, Float> tempMap = HashMultimap.create();
-        for (int i = 0; i < inputs.keys().size(); i++) {
-            tempMap.put(weights.get(i), Iterables.get(inputs.values(), i));
+        for (int i = 0; i < weights.size(); i++) {
+            inputs.get(i).setWeight(weights.get(i));
         }
-        if (output == Iterables.get(inputs.values(), 0)) {
-            output = Iterables.get(tempMap.values(), 0);
-        }
-        setInputs(tempMap);
     }
 
     public Float getOutput() {
         sum = 0f;
         if (layer == 0) {
-            inputs.entries().forEach(entry -> sum += (entry.getKey() * (log2(entry.getValue()))));
+            inputs.forEach(entry -> sum += entry.getWeight() * (log2(entry.getValue())));
         } else {
-            inputs.entries().forEach(entry -> sum += (entry.getKey() * (normalize(entry.getValue()))));
+            inputs.forEach(entry -> sum += entry.getWeight() * (normalize(entry.getValue())));
         }
         if (sum < 0) {
             Double a = (alpha * Math.exp(sum) - alpha) * lambda;
-            output = a.floatValue();
+            output.setValue(a.floatValue());
         } else {
-            output = sum * lambda;
+            output.setValue(sum * lambda);
         }
-        return output;
-    }
-
-    public void setOutput(Float output) {
-        this.output = output;
+        return output.getValue();
     }
 
 
     public Float getInput(Integer i) {
-
-        return Iterables.get(inputs.values(), i);
-
+        return inputs.get(i).getValue();
     }
 
     /*public Float getInput(Integer i) {
@@ -146,12 +107,6 @@ public class Perceptron {
         return null;
     }*/
 
-
-    public Multimap<Float, Float> getInputs() {
-        return inputs;
-
-    }
-
     /*public Multimap<Float, Float> getInputs() {
         try {
             mutex.lock();
@@ -164,13 +119,6 @@ public class Perceptron {
         return null;
     }*/
 
-
-    public void setInputs(Multimap<Float, Float> inputs) {
-
-        this.inputs = inputs;
-
-    }
-
     /*public void setInputs(Multimap<Float, Float> inputs) {
         try {
             mutex.lock();
@@ -182,22 +130,9 @@ public class Perceptron {
         }
     }*/
 
-    public void createInputs(List<Float> weights, List<Float> values) {
-        for (int i = 0; i < weights.size(); i++) {
-            inputs.put(weights.get(i), values.get(i));
-        }
-    }
-
-    public Float getSum() {
-        return sum;
-    }
-
-    public void setSum(Float sum) {
-        this.sum = sum;
-    }
 
     public Float getWeight(int index) {
-        return Iterables.get(inputs.keys(), index);
+        return inputs.get(index).getWeight();
     }
 
     /*public Float getWeight(int index) {
@@ -215,7 +150,7 @@ public class Perceptron {
 
 
     public List<Float> getWeights() {
-        return inputs.keys().stream().map(Float::floatValue).collect(Collectors.toList());
+        return inputs.stream().map(Dendrite::getWeight).collect(Collectors.toList());
     }
 
     /*public List<Float> getWeights() {
