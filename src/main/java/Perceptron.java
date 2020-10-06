@@ -9,8 +9,8 @@ import java.util.stream.Collectors;
 /*@XmlRootElement(name = "Perceptron")
 @XmlAccessorType(XmlAccessType.FIELD)*/
 public class Perceptron {
-    private Multimap<Float, Float> inputs;
-    private Float output;
+    private List<Dendrite> inputs;
+    private Dendrite output;
     private Float sum;
     private int layer;
     private final Float lambda = 1.0507f;
@@ -18,23 +18,22 @@ public class Perceptron {
     //private Mutex mutex;
 
     public Perceptron() {
-        inputs = HashMultimap.create();
-        //mutex = new Mutex();
+        inputs = new ArrayList<>();
         sum = 0f;
     }
 
-    public Float activation() {
+    public void activation() {
         sum = 0f;
         if (layer == 0) {
-            inputs.entries().forEach(entry -> sum += (entry.getKey() * (log2(entry.getValue()))));
+            inputs.stream().forEach(entry-> sum += entry.getWeight() * (log2(entry.getValue())));
         } else {
-            inputs.entries().forEach(entry -> sum += (entry.getKey() * (normalize(entry.getValue()))));
+            inputs.stream().forEach(entry-> sum += entry.getWeight() * (normalize(entry.getValue())));
         }
         if (sum < 0) {
             Double a = (alpha * Math.exp(sum) - alpha) * lambda;
-            return output = a.floatValue();
+            output.setValue(a.floatValue());
         } else {
-            return output = sum * lambda;
+            output.setValue(sum * lambda);
         }
     }
 
@@ -71,7 +70,11 @@ public class Perceptron {
         try {
             /*Float val = Iterables.get(inputs.values(), index);
             Float key = inputs.entries().stream().filter(entry -> val.equals(entry.getValue())).map(Map.Entry::getKey).findFirst().get();*/
-            inputs.replaceValues(Iterables.get(inputs.keys(), index), Arrays.asList(value));
+            try{
+                inputs.replaceValues(Iterables.get(inputs.keys(), index), Arrays.asList(value));
+            }catch (Exception e){
+                e.printStackTrace();
+            }
         } catch (Exception e) {
             e.printStackTrace();
         }
@@ -193,10 +196,8 @@ public class Perceptron {
         this.sum = sum;
     }
 
-    //TODO: mozliwe ze gdzies w trakcie podmiany wag albo wartosci zmniejszana jest ilosc polaczen, postestuj
     public Float getWeight(int index) {
         return Iterables.get(inputs.keys(), index);
-
     }
 
     /*public Float getWeight(int index) {

@@ -1,9 +1,9 @@
 import com.google.common.collect.*;
 
-import javax.xml.bind.annotation.*;
 import java.util.*;
 import java.util.concurrent.ThreadLocalRandom;
-import java.util.stream.Collectors;
+import java.util.concurrent.atomic.AtomicInteger;
+import java.util.concurrent.atomic.AtomicReference;
 
 /*@XmlRootElement(name = "Brain")
 @XmlAccessorType(XmlAccessType.FIELD)*/
@@ -74,8 +74,23 @@ public class Brain implements Comparable<Brain> {
         return null;
     }
 
+    //TODO: napisac lepsza implementacje tego
     public void replaceGivenWeightByIndex(int index, Float weightValue) {
-        int tempIndex = index;
+        AtomicInteger tempIndex = new AtomicInteger(index);
+        getPerceptronMap().values().stream().forEach(l->{
+            l.values().stream().forEach(p->{
+                AtomicInteger indexx = new AtomicInteger(0);
+                p.getInputs().keys().forEach(k->{
+                    if (tempIndex.get() == 0) {
+                        p.replacePerceptronWeight(indexx.get(),weightValue);
+                        return;
+                    }
+                    tempIndex.getAndDecrement();
+                    indexx.getAndIncrement();
+                });
+            });
+        });
+        /*int tempIndex = index;
         int tempMult = 0;
         if (index != 0 && index > getGivenLayer(0).values().size()) {
             for (int i = 0; i < getPerceptronMap().values().size(); i++) {
@@ -98,38 +113,52 @@ public class Brain implements Comparable<Brain> {
             }
         } else {
             getGivenPerceptron(0).replacePerceptronWeight(0, weightValue);
-        }
+        }*/
     }
 
+    //TODO: napisac lepsza implementacje tego
     public Float getGivenWeightByIndex(int index) {
-        int tempIndex = index;
-        int tempMult = 0;
-        if (index != 0 && index > getGivenLayer(0).values().size()) {
+        AtomicInteger tempIndex = new AtomicInteger(index);
+        //int tempMult = 0;
+        AtomicReference<Float> a = new AtomicReference<>(0f);
+        getPerceptronMap().values().stream().forEach(l->{
+            l.values().stream().forEach(p->{
+                p.getInputs().keys().forEach(k->{
+                    if (tempIndex.get() == 0) {
+                        a.set(k);
+                        return;
+                    }
+                    tempIndex.getAndDecrement();
+                });
+            });
+        });
+        return a.get();
+        /*if (index != 0 && index > getGivenLayer(0).values().size()) {
             for (int i = 0; i < getPerceptronMap().values().size(); i++) { //dla kazdej z 5 warstw
                 for (int j = 0; j < getGivenLayer(i).values().size(); j++) { //
                     for (int k = 0; k < getGivenPerceptron(j + tempMult).getInputs().values().size(); k++) {
-                        if (tempIndex == 0) {
+                        if (tempIndex.get() == 0) {
                             return getGivenPerceptron(j + tempMult).getWeight(k);
                         }
-                        tempIndex--;
+                        tempIndex.getAndDecrement();
                     }
                 }
                 tempMult += getGivenLayer(i).values().size();
             }
         } else if (index != 0 && index < getGivenLayer(0).values().size()) {
             for (int k = 0; k < getGivenPerceptron(0).getInputs().values().size(); k++) {
-                if (tempIndex == 0) {
+                if (tempIndex.get() == 0) {
                     return getGivenPerceptron(0).getWeight(k);
                 }
-                tempIndex--;
+                tempIndex.getAndDecrement();
             }
         } else {
             return getGivenPerceptron(0).getWeight(0);
-        }
-        return 0f;
+        }*/
+        //return 0f;
     }
 
-    //TODO: Pozbyc sie powtarzajacego sie kodu
+
     public void replaceGivenPerceptron(Integer index, Perceptron p) {
         int temp = 0;
         int tempLayer = 0;

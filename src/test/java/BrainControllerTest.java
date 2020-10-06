@@ -1,4 +1,5 @@
 import com.google.common.collect.HashMultimap;
+import com.google.common.collect.Iterables;
 import com.google.common.collect.Multimap;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -22,6 +23,9 @@ public class BrainControllerTest {
 
         map.put("book", 4);
         map.put("book", 3);
+
+        System.out.println(map.size());
+        Iterables.get(map.keys(),3);
 
         /*Iterable iter = map.get("book");
         map.replaceValues("game", iter);

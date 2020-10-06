@@ -153,7 +153,7 @@ public class GameInstance extends Thread {
                 checkGameOver();
             }
             if (!game) {
-                tries++;
+                //tries++;
                 restart();
                  if(index>=genetics.getPopulation()){
                     gameView.setFinishedInstances(gameView.getFinishedInstances() + 1);
@@ -220,15 +220,15 @@ public class GameInstance extends Thread {
 
     public void restart() {
         brainController.getBlocks().clear();
-            if (tries <= 10) {
+            /*if (tries <= 10) {
                 //System.out.println(this.getName() + " // " + brainController.getBrain().getScore() + " -- " + index + " / " + genetics.getPopulation());
                 brainController.getBrain().setScore(brainController.getBrain().getScore() + score);
                 brainController.getBrain().setLp(index);
-            }
-            if (!genetics.isGroupset() && tries == 10 && index<=genetics.getPopulation()) {
-                brainController.getBrain().setScore((brainController.getBrain().getScore() + score) / 10);
+            }*/
+            if (!genetics.isGroupset() && index<=genetics.getPopulation()) {
+                brainController.getBrain().setScore((brainController.getBrain().getScore() + score));
                 brainController.getBrain().setLp(index);
-                System.out.println(this.getName() + " // " + brainController.getBrain().getScore() + " -- " + index + " / " + genetics.getPopulation());
+                //System.out.println(this.getName() + " // " + brainController.getBrain().getScore() + " -- " + index + " / " + genetics.getPopulation());
                 index = gameView.getIndex();
                 gameView.setIndex(gameView.getIndex()+1);
                 genetics.getGenePool().add(brainController.getBrain());
@@ -236,10 +236,10 @@ public class GameInstance extends Thread {
                 brain.createDefaultPerceptronMap();
                 brainController.setBrain(brain);
                 tries = 0;
-            } else if (genetics.isGroupset() && tries == 10 && index<=genetics.getPopulation()) {
-                brainController.getBrain().setScore((brainController.getBrain().getScore() + score) / 10);
+            } else if (genetics.isGroupset() && index<=genetics.getPopulation()) {
+                brainController.getBrain().setScore((brainController.getBrain().getScore() + score));
                 brainController.getBrain().setLp(index);
-                System.out.println(this.getName() + " // " + brainController.getBrain().getScore() + " -- " + index + " / " + genetics.getPopulation());
+                //System.out.println(this.getName() + " // " + brainController.getBrain().getScore() + " -- " + index + " / " + genetics.getPopulation());
                 brainController.setBrain(genetics.getGenePool().get(index));
                 index = gameView.getIndex();
                 gameView.setIndex(gameView.getIndex()+1);
