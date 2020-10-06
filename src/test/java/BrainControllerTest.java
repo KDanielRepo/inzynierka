@@ -36,12 +36,12 @@ public class BrainControllerTest {
     @Test
     public void setCurrentInputsTest(){
         BrainController brainController = createBrainController();
-        System.out.println(brainController.getBrain().getOutputLayer().values());
+        System.out.println(brainController.getBrain().getOutputLayer());
         long start = System.nanoTime();
         brainController.setCurrentInputs(randomValues());
         long end = System.nanoTime();
         System.out.println("wynik: "+(end-start)*0.000000001);
-        System.out.println(brainController.getBrain().getOutputLayer().values());
+        System.out.println(brainController.getBrain().getOutputLayer());
     }
 
     private Integer[][] randomValues(){

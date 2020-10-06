@@ -29,13 +29,12 @@ public class Brain implements Comparable<Brain> {
     }
 
     public List<Perceptron> getGivenLayer(int layer) {
-        List<Perceptron> a = (List<Perceptron>) getPerceptronMap().get(layer);
-        return a;
+        List<Perceptron> givenLayer = new ArrayList<>(getPerceptronMap().get(layer));
+        return givenLayer;
     }
 
-    public Multimap<Integer, Float> getOutputLayer() {
-        Multimap<Integer, Float> out = Multimaps.transformValues(getGivenLayer(getPerceptronMap().size() - 1), Perceptron::activation);
-        return out;
+    public List<Perceptron> getOutputLayer() {
+        return new ArrayList<>(perceptronMap.get(perceptronMap.keySet().size()-1));
     }
 
     public Integer getPerceptronCount() {
@@ -47,164 +46,104 @@ public class Brain implements Comparable<Brain> {
     }
 
     public Perceptron getGivenPerceptron(int index) {
-        return Iterables.get(getPerceptronMap().values(),index);
+        return Iterables.get(getPerceptronMap().values(), index);
     }
 
-    //TODO: napisac lepsza implementacje tego
     public void replaceGivenWeightByIndex(int index, Float weightValue) {
         AtomicInteger tempIndex = new AtomicInteger(index);
-        getPerceptronMap().values().stream().forEach(l -> {
-            l.values().stream().forEach(p -> {
-                AtomicInteger indexx = new AtomicInteger(0);
-                p.getInputs().keys().forEach(k -> {
-                    if (tempIndex.get() == 0) {
-                        p.replacePerceptronWeight(indexx.get(), weightValue);
-                        return;
-                    }
-                    tempIndex.getAndDecrement();
-                    indexx.getAndIncrement();
-                });
+        getPerceptronMap().values().forEach(perceptron -> {
+            perceptron.getInputs().forEach(dendrite -> {
+                if (tempIndex.get() == 0) {
+                    dendrite.setWeight(weightValue);
+                    return;
+                }
+                tempIndex.getAndDecrement();
             });
         });
     }
 
-    //TODO: napisac lepsza implementacje tego
     public Float getGivenWeightByIndex(int index) {
-        AtomicInteger tempIndex = new AtomicInteger(index);
-        //int tempMult = 0;
-        AtomicReference<Float> a = new AtomicReference<>(0f);
-        getPerceptronMap().values().stream().forEach(l -> {
-            l.values().stream().forEach(p -> {
-                p.getInputs().keys().forEach(k -> {
-                    if (tempIndex.get() == 0) {
-                        a.set(k);
-                        return;
-                    }
-                    tempIndex.getAndDecrement();
-                });
+        AtomicInteger tempIndex = new AtomicInteger(0);
+        AtomicReference<Float> weight = new AtomicReference<>(0f);
+
+        getPerceptronMap().values().stream().forEach(perceptron -> {
+            perceptron.getInputs().forEach(dendrite -> {
+                if (tempIndex.get() == index) {
+                    weight.set(dendrite.getWeight());
+                    return;
+                }
+                tempIndex.getAndIncrement();
             });
         });
-        return a.get();
+        return weight.get();
     }
 
-
-    public void replaceGivenPerceptron(Integer index, Perceptron p) {
-        int temp = 0;
-        int tempLayer = 0;
-        int tempIndex = 0;
-        for (Multimap<Integer, Perceptron> m : getPerceptronMap().values()) {
-            if (temp + m.size() - 1 >= index) {
-                if (index == temp + m.size() - 1) {
-                    temp += m.size() - 1;
-                } else {
-                    temp += index;
-                }
-                break;
-            } else {
-                tempLayer++;
-                temp += m.size();
-                tempIndex += index - (m.size()) * tempLayer;
-            }
-        }
-
-        if (tempLayer != 0) {
-            for (Perceptron per : getGivenLayer(tempLayer).get(tempIndex)) {
-                per.setInputs(p.getInputs());
-            }
-        } else {
-            for (Perceptron per : getGivenLayer(tempLayer).get(temp)) {
-                per.setInputs(p.getInputs());
-            }
-        }
-    }
-
-    public void createPerceptronMap(Integer layers, List<Integer> rows) {
-        perceptronMap = ArrayListMultimap.create();
-        for (int k = 0; k < layers; k++) {//3
-            Multimap<Integer, Perceptron> temp = ArrayListMultimap.create();
-            for (int l = 0; l < rows.get(k); l++) {
-                Perceptron p = new Perceptron();
-                if (k == 0) {
+    public void createPerceptronMap(List<Integer> rows) {
+        perceptronMap = HashMultimap.create();
+        for (int i = 0; i < rows.size(); i++) {
+            for (int j = 0; j < rows.get(i); j++) {
+                Perceptron perceptron = new Perceptron();
+                if (i == 0) {
+                    perceptron.setLayer(i);
                     Float weight = ThreadLocalRandom.current().nextFloat();
-                    Float value = 0f;
-                    p.getInputs().put(weight, value);
-                    p.setLayer(k);
+                    Dendrite dendrite = new Dendrite();
+                    dendrite.setValue(0f);
+                    dendrite.setWeight(weight);
+                    dendrite.setIn(perceptron);
                 } else {
-                    for (Perceptron pp : getGivenLayer(k - 1).values()) {
+                    for (int k = 0; k < rows.get(i - 1); k++) {
                         Float weight = ThreadLocalRandom.current().nextFloat();
-                        p.getInputs().put(weight, pp.getOutput());
-                        p.setLayer(k);
+                        Dendrite dendrite = new Dendrite();
+                        dendrite.setValue(0f);
+                        dendrite.setWeight(weight);
+                        dendrite.setIn(perceptron);
+                        dendrite.setOut(Iterables.get(perceptronMap.get(i - 1), k));
                     }
                 }
-                temp.put(l, p);
+                perceptronMap.put(i, perceptron);
             }
-            perceptronMap.put(k, temp);
         }
     }
 
     public void updatePerceptronValues() {
-        List<Float> outputs = new ArrayList<>();
-        int size = 0;
-        for (int i = 0; i < getPerceptronMap().size(); i++) {
-            if (i > 0) {
-                for (int j = 0; j < getGivenLayer(i).size(); j++) {
-                    outputs.add(getGivenPerceptron(j + size).getOutput());
-                }
-            }
-            size += getGivenLayer(i).size();
+        for(Perceptron perceptron : getPerceptronMap().values()){
+            perceptron.activation();
         }
-        int iter = 0;
-        for (int i = 0; i < getPerceptronMap().values().size(); i++) {
-            if (i > 0) {
-                int index = 0;
-                for (Perceptron p : getGivenLayer(i).values()) {
-                    p.replacePerceptronValue(index, outputs.get(iter));
-                    index++;
-                    iter++;
-                }
-            }
-        }
-
     }
 
     public void createDefaultPerceptronMap() {
         List<Integer> rows = Arrays.asList(8, 8, 8, 8, 4);
         perceptronMap = HashMultimap.create();
         for (int i = 0; i < rows.size(); i++) {
-            List<Dendrite> dendrites = new ArrayList<>();
-            Perceptron perceptron = new Perceptron();
             for (int j = 0; j < rows.get(i); j++) {
-                Float weight = ThreadLocalRandom.current().nextFloat();
-                Dendrite dendrite = new Dendrite();
-                dendrite.setValue(0f);
-                dendrite.setWeight(weight);
-                dendrites.add(dendrite);
-            }
-            perceptronMap.put(i,perceptron);
-        }
-
-
-        for (int k = 0; k < rows.size(); k++) {
-            Multimap<Integer, Perceptron> temp = HashMultimap.create();
-            for (int l = 0; l < rows.get(k); l++) {
-                Perceptron p = new Perceptron();
-                if (k == 0) {
-                    for (int i = 0; i < 16; i++) {
+                Perceptron perceptron = new Perceptron();
+                List<Dendrite> dendrites = new ArrayList<>();
+                if (i == 0) {
+                    perceptron.setLayer(i);
+                    for (int k = 0; k < 16; k++) {
                         Float weight = ThreadLocalRandom.current().nextFloat();
-                        Float value = 0f;
-                        p.getInputs().put(weight, value);
-                        p.setLayer(k);
+                        Dendrite dendrite = new Dendrite();
+                        dendrite.setValue(0f);
+                        dendrite.setWeight(weight);
+                        dendrite.setIn(perceptron);
+                        dendrites.add(dendrite);
                     }
+                    perceptron.setInputs(dendrites);
                 } else {
-                    for (Perceptron pp : getGivenLayer(k - 1).values()) {
+                    for (int k = 0; k < rows.get(i - 1); k++) {
                         Float weight = ThreadLocalRandom.current().nextFloat();
-                        p.getInputs().put(weight, 0f);
-                        p.setLayer(k);
+                        Dendrite dendrite = new Dendrite();
+                        dendrite.setValue(Iterables.get(perceptronMap.get(i - 1), k).getOutput());
+                        dendrite.setWeight(weight);
+                        dendrite.setIn(perceptron);
+                        dendrite.setOut(Iterables.get(perceptronMap.get(i - 1), k));
+                        dendrites.add(dendrite);
                     }
+                    perceptron.setLayer(i);
+                    perceptron.setInputs(dendrites);
                 }
-                temp.put(l, p);
+                perceptronMap.put(i, perceptron);
             }
-            perceptronMap.put(k, temp);
         }
     }
 

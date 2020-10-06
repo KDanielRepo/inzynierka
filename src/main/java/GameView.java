@@ -202,7 +202,7 @@ public class GameView extends Application {
             gc.setStroke(Color.BLACK);
             gc.setLineWidth(2f);
 
-            int divisionSize = brainController.getBrain().getPerceptronMap().get(0).stream().findFirst().get().size();
+            int divisionSize = brainController.getBrain().getPerceptronMap().get(0).size();
             int layer = brainController.getBrain().getPerceptronMap().size();
             int neuronWidth = (int) canvas.getHeight() / divisionSize;
             int neuronHeight = (int) canvas.getHeight() / divisionSize;
@@ -218,7 +218,7 @@ public class GameView extends Application {
             }
 
             for (int i = 1; i < layer + 1; i++) {
-                int layerSize = brainController.getBrain().getPerceptronMap().get(i - 1).stream().findFirst().get().size();
+                int layerSize = brainController.getBrain().getPerceptronMap().get(i - 1).size();
                 for (int j = 0; j < layerSize; j++) {
                     if (i == 1) {
                         gc.strokeText(gameMatrix[j / 4][j % 4].toString(), canvas.getWidth() / layer * (i - 1), canvas.getHeight() / divisionSize * j + neuronHeight / 2);
@@ -226,7 +226,7 @@ public class GameView extends Application {
                     for (int k = 0; k < layerSize; k++) {
                         int layerSizeNext = layerSize;
                         if (i < layer) {
-                            layerSizeNext = brainController.getBrain().getPerceptronMap().get(i).stream().findFirst().get().size();
+                            layerSizeNext = brainController.getBrain().getPerceptronMap().get(i).size();
                         }
                         //zaczyna sie przy kazdym wejsciu albo neuronie
                         //leci do kazdego nastepnego neuronu
@@ -237,7 +237,7 @@ public class GameView extends Application {
                     }
                     gc.setStroke(Color.BLACK);
                     gc.strokeOval(canvas.getWidth() / layer * i - neuronWidth, canvas.getHeight() / divisionSize * j, neuronWidth, neuronHeight);
-                    gc.strokeText(brainController.getBrain().getPerceptronMap().get(i - 1).stream().findFirst().get().get(j).stream().findFirst().get().getOutput().toString().substring(0, 4), canvas.getWidth() / layer * i - neuronWidth, canvas.getHeight() / divisionSize * j + neuronHeight / 2);
+                    //gc.strokeText(brainController.getBrain().getPerceptronMap().get(i - 1).stream().findFirst().get().get(j).stream().findFirst().get().getOutput().toString().substring(0, 4), canvas.getWidth() / layer * i - neuronWidth, canvas.getHeight() / divisionSize * j + neuronHeight / 2);
                     //System.out.println("input: "+brainController.getBrain().getPerceptronMap().get(i-1).stream().findFirst().get().get(j).stream().findFirst().get().getInput(0).toString());
                     //System.out.println(brainController.getBrain().getPerceptronMap().get(i-1).stream().findFirst().get().get(j).stream().findFirst().get().getOutput().toString());
                 }
@@ -275,8 +275,8 @@ public class GameView extends Application {
                 if (radioButtons[i].isSelected()) {
                     int finalI = i;
                     AtomicInteger index = new AtomicInteger();
-                    brainController.getBrain().getPerceptronMap().get(i).stream().findFirst().get().values().forEach(o -> {
-                        debugGc.strokeText("Waga nr. " + index + " to: " + o.getWeights().get(index.get()).toString().substring(0, 4), debugCanvas.getWidth() / 2, debugCanvas.getHeight() / brainController.getBrain().getPerceptronMap().get(finalI).stream().findFirst().get().values().size() * index.get() + debugGc.getFont().getSize());
+                    brainController.getBrain().getPerceptronMap().values().forEach(o -> {
+                        debugGc.strokeText("Waga nr. " + index + " to: " + o.getWeights().get(index.get()).toString().substring(0, 4), debugCanvas.getWidth() / 2, debugCanvas.getHeight() / brainController.getBrain().getPerceptronMap().values().size() * index.get() + debugGc.getFont().getSize());
                         index.getAndIncrement();
                     });
                 }
@@ -325,7 +325,7 @@ public class GameView extends Application {
                     pre = "lewo: ";
                     break;
             }
-            String middle = Iterables.get(brainController.getBrain().getOutputLayer().values(), i).toString();
+            String middle = Iterables.get(brainController.getBrain().getOutputLayer(), i).toString();
             generalInfoGC.strokeText(pre + middle, 0, height * (8 + i));
         }
     }

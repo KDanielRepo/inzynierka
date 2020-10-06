@@ -3,6 +3,8 @@ import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.junit.runners.JUnit4;
 
+import java.util.Arrays;
+
 @RunWith(JUnit4.class)
 public class PerceptronTest {
 
@@ -45,9 +47,19 @@ public class PerceptronTest {
 
     private Perceptron createPerceptron(){
         Perceptron p = new Perceptron();
-        p.getInputs().put(1f,1f);
-        p.getInputs().put(2f,2f);
-        p.getInputs().put(3f,3f);
+        Dendrite dendrite = new Dendrite();
+        dendrite.setValue(1f);
+        dendrite.setWeight(1f);
+
+        Dendrite dendrite2 = new Dendrite();
+        dendrite2.setValue(1f);
+        dendrite2.setWeight(1f);
+
+        Dendrite dendrite3 = new Dendrite();
+        dendrite3.setValue(1f);
+        dendrite3.setWeight(1f);
+
+        p.setInputs(Arrays.asList(dendrite,dendrite2,dendrite3));
         return p;
     }
 }

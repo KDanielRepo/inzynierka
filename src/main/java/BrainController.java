@@ -1,13 +1,9 @@
 import com.google.common.base.Predicate;
 import com.google.common.collect.Iterables;
-import com.google.common.collect.Lists;
-import com.google.common.collect.Multimap;
-import com.google.common.collect.Multimaps;
 import org.checkerframework.checker.nullness.qual.Nullable;
 
 import java.util.*;
-import java.util.concurrent.atomic.AtomicInteger;
-import java.util.stream.Collectors;
+import java.util.concurrent.atomic.AtomicReference;
 
 public class BrainController {
     private Brain brain;
@@ -24,7 +20,7 @@ public class BrainController {
         brain.createPerceptronMap(2, list);*/
     }
 
-    public Integer generateMove(){
+    public Integer generateMove() {
         Map<Integer, Float> map = softmax();
         Float value = Float.parseFloat(map
                 .values()
@@ -32,24 +28,24 @@ public class BrainController {
                 .max(Comparator.naturalOrder())
                 .toString()
                 .substring(8)
-                .replaceAll("[\\[\\]]",""));
+                .replaceAll("[\\[\\]]", ""));
 
         return Integer.parseInt(map
                 .entrySet()
                 .stream()
-                .filter(entry->value.equals(entry.getValue()))
+                .filter(entry -> value.equals(entry.getValue()))
                 .map(Map.Entry::getKey)
                 .findFirst()
                 .toString()
                 .substring(8)
-                .replaceAll("[\\[\\]]",""));
+                .replaceAll("[\\[\\]]", ""));
     }
 
-    public Integer generateMoveWithoutBlocks(){
+    public Integer generateMoveWithoutBlocks() {
         List<Integer> avMoves = new ArrayList<>();
-        Map<Integer,Float> map = softmax();
+        Map<Integer, Float> map = softmax();
         Integer move = -1;
-        for (int i = map.size()-1; i >=0 ; i--) {
+        for (int i = map.size() - 1; i >= 0; i--) {
             int finalI = i;
             move = Integer.parseInt(map
                     .entrySet()
@@ -62,21 +58,27 @@ public class BrainController {
                     .replaceAll("[\\[\\]]", ""));
             avMoves.add(move);
         }
-        blocks.stream().distinct().forEach(e->{
-            if(avMoves.contains(e)){
+        blocks.stream().distinct().forEach(e -> {
+            if (avMoves.contains(e)) {
                 avMoves.remove(e);
             }
         });
         return avMoves.get(0);
     }
 
-    public Map<Integer,Float> softmax(){
-        Map<Integer,Float> probabilities = new HashMap<>();
+    public Map<Integer, Float> softmax() {
+        Map<Integer, Float> probabilities = new HashMap<>();
+        AtomicReference<Double> tempSum = new AtomicReference<>(0d);
         for (int i = 0; i < brain.getOutputLayer().size(); i++) {
-            Float sum = brain.getOutputLayer().values().stream().map(Math::exp).reduce(0d,Double::sum).floatValue();
-            Float value = Iterables.get(brain.getOutputLayer().values(),i);
-            Float probability =  value/sum;
-            probabilities.put(i,probability);
+            brain.getOutputLayer().forEach(perceptron -> {
+                perceptron.getInputs().forEach(dendrite -> {
+                    tempSum.updateAndGet(v -> v + Math.exp(dendrite.getValue()));
+                });
+            });
+            Float sum = tempSum.get().floatValue();
+            Float value = brain.getOutputLayer().get(i).getOutput();
+            Float probability = value / sum;
+            probabilities.put(i, probability);
         }
         return probabilities;
     }
@@ -88,10 +90,8 @@ public class BrainController {
                 list.add(j.floatValue());
             }
         }
-        int i = 0;
-        for (Perceptron p : brain.getGivenLayer(0).values()) {
-                p.replacePerceptronValues(i, list);
-            i++;
+        for (Perceptron p : brain.getGivenLayer(0)) {
+            p.replacePerceptronValues(list);
         }
         brain.updatePerceptronValues();
     }
@@ -113,19 +113,10 @@ public class BrainController {
     }
 
     public void addBlock(int block) {
-        /*Multimap<Integer,Perceptron> p = getBrain().getPerceptronMap().get(0).stream().findFirst().get();
-        Perceptron a = p.get(16+block).stream().findFirst().get();
-        a.replacePerceptronValue(0,1f);*/
         blocks.add(block);
     }
-    public void clearBlocks(){
-        Multimap<Integer,Perceptron> p = getBrain().getPerceptronMap().get(0).stream().findFirst().get();
-        Multimaps.filterKeys(p,between(14,20)).values().stream().forEach(e->{
-            e.replacePerceptronValue(0,0f);
-        });
-    }
 
-    private Predicate<Integer> between(int from, int to){
+    private Predicate<Integer> between(int from, int to) {
         return new Predicate<Integer>() {
             @Override
             public boolean apply(@Nullable Integer integer) {

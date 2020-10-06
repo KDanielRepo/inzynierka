@@ -38,8 +38,6 @@ public class Perceptron {
         return a.intValue();
     }
 
-    //TODO: Ale zaraz przeca cos rozwale, dlaczego tutaj rzuca ten ConcurrentModificationException...
-
     public Float calculateSum() {
         sum = 0f;
         if (layer == 0) {
@@ -75,21 +73,9 @@ public class Perceptron {
     }
 
     public Float getOutput() {
-        sum = 0f;
-        if (layer == 0) {
-            inputs.forEach(entry -> sum += entry.getWeight() * (log2(entry.getValue())));
-        } else {
-            inputs.forEach(entry -> sum += entry.getWeight() * (normalize(entry.getValue())));
-        }
-        if (sum < 0) {
-            Double a = (alpha * Math.exp(sum) - alpha) * lambda;
-            output.setValue(a.floatValue());
-        } else {
-            output.setValue(sum * lambda);
-        }
+        activation();
         return output.getValue();
     }
-
 
     public Float getInput(Integer i) {
         return inputs.get(i).getValue();
@@ -173,4 +159,15 @@ public class Perceptron {
         this.layer = layer;
     }
 
+    public List<Dendrite> getInputs() {
+        return inputs;
+    }
+
+    public void setInputs(List<Dendrite> inputs) {
+        this.inputs = inputs;
+    }
+
+    public void setOutput(Dendrite output) {
+        this.output = output;
+    }
 }
