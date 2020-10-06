@@ -107,6 +107,11 @@ public class Brain implements Comparable<Brain> {
 
     public void updatePerceptronValues() {
         for(Perceptron perceptron : getPerceptronMap().values()){
+            if(perceptron.getLayer()>0){
+                for(Dendrite dendrite : perceptron.getInputs()){
+                    dendrite.setValue(dendrite.getOut().getOutput());
+                }
+            }
             perceptron.activation();
         }
     }
