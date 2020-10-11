@@ -1,3 +1,4 @@
+import com.google.common.base.Predicates;
 import com.google.common.collect.Iterables;
 import com.google.common.collect.Multimap;
 

@@ -5,6 +5,10 @@ import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.junit.runners.JUnit4;
 
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.List;
+
 @RunWith(JUnit4.class)
 public class BrainTest {
 
@@ -57,15 +61,40 @@ public class BrainTest {
     }
 
     @Test
+    public void getGivenWeightByIndex(){
+        Brain brain = createBrain();
+        Float a = brain.getGivenWeightByIndex(17);
+        System.out.println(a);
+    }
+
+    @Test
     public void updatePerceptronValuesTest(){
         Brain brain = createBrain();
         System.out.println(brain.getOutputLayer());
         brain.getGivenPerceptron(0).replacePerceptronValue(0,15f);
-        long start = System.nanoTime();
         brain.updatePerceptronValues();
-        long end = System.nanoTime();
-        System.out.println("wynik: "+(end-start)*0.000000001);
         System.out.println(brain.getOutputLayer());
+    }
+
+    @Test
+    public void dlaSuleczka(){
+        String a = "Test, to jest tylko test";
+        String b = "Test to też";
+        String c = "Nie ma tu testu";
+        String d = "Cholipka ile tych testów";
+
+        a += " "+b+" "+c+" "+d;
+        System.out.println(a);
+        List<String> lista = Arrays.asList(a.split("[\\s,]"));
+        List<String> bezPowtorek = new ArrayList<>();
+        for (int i = 0; i < lista.size(); i++) {
+            if(!bezPowtorek.contains(lista.get(i)) && !lista.get(i).isEmpty()){
+                bezPowtorek.add(lista.get(i));
+            }
+        }
+        for (int i = 0; i < bezPowtorek.size(); i++) {
+            System.out.println(bezPowtorek.get(i));
+        }
     }
 
     private Brain createBrain(){

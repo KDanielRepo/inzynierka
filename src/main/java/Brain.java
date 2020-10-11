@@ -50,14 +50,13 @@ public class Brain implements Comparable<Brain> {
     }
 
     public void replaceGivenWeightByIndex(int index, Float weightValue) {
-        AtomicInteger tempIndex = new AtomicInteger(index);
+        AtomicInteger tempIndex = new AtomicInteger(0);
         getPerceptronMap().values().forEach(perceptron -> {
             perceptron.getInputs().forEach(dendrite -> {
-                if (tempIndex.get() == 0) {
+                if (tempIndex.get() == index) {
                     dendrite.setWeight(weightValue);
-                    return;
                 }
-                tempIndex.getAndDecrement();
+                tempIndex.getAndIncrement();
             });
         });
     }
@@ -65,12 +64,10 @@ public class Brain implements Comparable<Brain> {
     public Float getGivenWeightByIndex(int index) {
         AtomicInteger tempIndex = new AtomicInteger(0);
         AtomicReference<Float> weight = new AtomicReference<>(0f);
-
         getPerceptronMap().values().stream().forEach(perceptron -> {
             perceptron.getInputs().forEach(dendrite -> {
                 if (tempIndex.get() == index) {
                     weight.set(dendrite.getWeight());
-                    return;
                 }
                 tempIndex.getAndIncrement();
             });
