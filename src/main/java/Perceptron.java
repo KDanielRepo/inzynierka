@@ -217,6 +217,7 @@ public class Perceptron {
         return inputs.keys().stream().map(Float::floatValue).collect(Collectors.toList());
     }
 
+
     /*public List<Float> getWeights() {
         try {
             mutex.lock();

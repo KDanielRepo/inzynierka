@@ -17,6 +17,7 @@ public class BrainTest {
         Assert.assertEquals(p1,p2);
     }
 
+
     @Test
     public void getOutputLayerTest(){
         Brain brain = createBrain();
@@ -62,17 +63,18 @@ public class BrainTest {
     public void replaceGivenWeightByIndexTest(){
         Brain brain = new Brain();
         brain.createDefaultPerceptronMap();
-        int size = 0;
-        for (int i = 0; i < brain.getPerceptronMap().values().size(); i++) {
-            //System.out.println(brain.getPerceptronMap().values().size());
-            //System.out.println(brain.getGivenLayer(i).values().size());
-            System.out.println("-----");
-            for (int j = 0; j < brain.getGivenLayer(i).values().size(); j++) {
-                System.out.println(j + size);
-                System.out.println(brain.getGivenPerceptron(j + (i * brain.getPerceptronMap().values().size())).getInputs().size());
-            }
-            size += brain.getGivenLayer(i).values().size();
-        }
+        brain.getPerceptronMap().values().forEach(e->{
+            e.values().forEach(perceptron -> {
+                System.out.println(perceptron.getWeights());
+            });
+        });
+        brain.replaceGivenWeightByIndex(0,32f);
+        System.out.println("------------------");
+        brain.getPerceptronMap().values().forEach(e->{
+            e.values().forEach(perceptron -> {
+                System.out.println(perceptron.getWeights());
+            });
+        });
     }
 
     @Test
