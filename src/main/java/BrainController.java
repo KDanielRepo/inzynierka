@@ -22,13 +22,12 @@ public class BrainController {
 
     public Integer generateMove() {
         Map<Integer, Float> map = softmax();
-        Float value = Float.parseFloat(map
+        Float value = map
                 .values()
                 .stream()
-                .max(Comparator.naturalOrder())
-                .toString()
-                .substring(8)
-                .replaceAll("[\\[\\]]", ""));
+                .sorted(Comparator.naturalOrder())
+                .findFirst()
+                .get();
 
         return Integer.parseInt(map
                 .entrySet()

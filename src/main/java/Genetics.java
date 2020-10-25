@@ -1,7 +1,3 @@
-import com.google.common.base.Predicates;
-import com.google.common.collect.Iterables;
-import com.google.common.collect.Multimap;
-
 import java.util.*;
 import java.util.concurrent.ThreadLocalRandom;
 import java.util.stream.Collectors;
@@ -126,9 +122,8 @@ public class Genetics {
     }
 
     public void mutate() {
-        for (int i = 0; i < getGenePool().size() - 1; i++) {
-            for (int j = 0; j < getGenePool().get(i).getPerceptronCount() - 1; j++) {
-                float temp = (float) getGenePool().get(i).getPerceptronCount();
+        for (int i = 0; i < getGenePool().size(); i++) {
+            for (int j = 0; j < getGenePool().get(i).getPerceptronCount(); j++) {
                 float probability = 1f / 50f * (0.1f * getCurrentGeneration());
                 float random = ThreadLocalRandom.current().nextFloat();
                 if (random < probability) {
