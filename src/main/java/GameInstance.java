@@ -82,7 +82,10 @@ public class GameInstance extends Thread {
                             for (int j = 0; j < 4; j++) {
                                 if (gameMatrix[i][j].equals(gameMatrix[i - 1][j]) && (gameMatrix[i][j] != 0)) {
                                     gameMatrix[i][j] = gameMatrix[i][j] * 2;
-                                    score += gameMatrix[i][j];
+                                    if(!scoreAdded){
+                                        score += gameMatrix[i][j];
+                                        scoreAdded = true;
+                                    }
                                     gameMatrix[i - 1][j] = 0;
                                     moved = true;
                                 }
@@ -102,7 +105,10 @@ public class GameInstance extends Thread {
                             for (int j = 0; j < 3; j++) {
                                 if (gameMatrix[i][j].equals(gameMatrix[i][j + 1]) && (gameMatrix[i][j] != 0)) {
                                     gameMatrix[i][j] = gameMatrix[i][j] * 2;
-                                    score += gameMatrix[i][j];
+                                    if(!scoreAdded){
+                                        score += gameMatrix[i][j];
+                                        scoreAdded = true;
+                                    }
                                     gameMatrix[i][j + 1] = 0;
                                     moved = true;
                                 }
@@ -122,7 +128,10 @@ public class GameInstance extends Thread {
                             for (int j = 3; j > 0; j--) {
                                 if (gameMatrix[i][j].equals(gameMatrix[i][j - 1]) && (gameMatrix[i][j] != 0)) {
                                     gameMatrix[i][j] = gameMatrix[i][j] * 2;
-                                    score += gameMatrix[i][j];
+                                    if(!scoreAdded){
+                                        score += gameMatrix[i][j];
+                                        scoreAdded = true;
+                                    }
                                     gameMatrix[i][j - 1] = 0;
                                     moved = true;
                                 }
