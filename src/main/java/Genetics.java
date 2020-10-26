@@ -16,13 +16,12 @@ public class Genetics {
     private int currentGeneration;
     private int weights;
     private Double lowerHalf;
-    private Double upperHalf;
 
     public Genetics() {
         best = new Brain();
         bestBrains = new ArrayList<>();
-        population = 100;
-        generation = 500;
+        population = 400;
+        generation = 1000;
         groupset = false;
         currentGeneration = 0;
         weights = 0;
@@ -39,12 +38,11 @@ public class Genetics {
             });
         });
         lowerHalf = Math.floor((double) weights / 2);
-        upperHalf = Math.ceil((double) weights / 2);
     }
 
     public void createOffspringCorrect() {
         getRealFittest();
-        //replaceWorstBrains();
+        replaceWorstBrains();
         //ustawianie PC kazdego osobnika
         for (int i = 0; i < getGenePool().size(); i++) {
             getGenePool().get(i).setPc(ThreadLocalRandom.current().nextFloat() * getGenePool().get(i).getScore());
@@ -182,17 +180,35 @@ public class Genetics {
         return fit;
     }
 
+    public void purge(){
+        genePool = new ArrayList<>();
+        for (int i = 0; i < population/2; i++) {
+            genePool.add(best);
+            Brain brain = new Brain();
+            brain.createDefaultPerceptronMap();
+            genePool.add(brain);
+        }
+    }
+
     public void getRealFittest() {
         List<Brain> sorted = getGenePool().stream().sorted(Comparator.comparing(Brain::getScore).reversed()).collect(Collectors.toList());
         if (best == null || sorted.get(0).getScore() > best.getScore()) {
             best = sorted.get(0);
+            convergence = 0;
+        }else{
+            convergence++;
+        }
+        if(convergence>50){
+            System.out.println("osiagnieto zbierznosc");
+            //purge();
+            convergence = 0;
         }
         System.out.println("Najlepszy osobnik uzyskal wynik :" + best.getScore() + " o indeksie : " + best.getLp() + " id: " + best);
     }
 
     public void replaceWorstBrains() {
         List<Brain> sorted = getGenePool().stream().sorted(Comparator.comparing(Brain::getScore)).collect(Collectors.toList());
-        for (int i = 0; i < 10; i++) {
+        for (int i = 0; i < 2*convergence; i++) {
             Brain brain = new Brain();
             brain.createDefaultPerceptronMap();
             sorted.remove(sorted.get(i));
