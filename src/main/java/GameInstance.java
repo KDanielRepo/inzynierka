@@ -14,7 +14,7 @@ public class GameInstance extends Thread {
     private GameView gameView;
     private Integer index;
     private boolean selectedAsView;
-
+    private boolean scoreAdded;
     public void setGameView(GameView gameView) {
         this.gameView = gameView;
     }
@@ -58,7 +58,10 @@ public class GameInstance extends Thread {
                             for (int j = 0; j < 4; j++) {
                                 if (gameMatrix[i][j].equals(gameMatrix[i + 1][j]) && (gameMatrix[i][j] != 0)) {
                                     gameMatrix[i][j] = gameMatrix[i][j] * 2;
-                                    score += gameMatrix[i][j];
+                                    if(!scoreAdded){
+                                        score += gameMatrix[i][j];
+                                        scoreAdded = true;
+                                    }
                                     gameMatrix[i + 1][j] = 0;
                                     moved = true;
                                 }
@@ -78,7 +81,10 @@ public class GameInstance extends Thread {
                             for (int j = 0; j < 4; j++) {
                                 if (gameMatrix[i][j].equals(gameMatrix[i - 1][j]) && (gameMatrix[i][j] != 0)) {
                                     gameMatrix[i][j] = gameMatrix[i][j] * 2;
-                                    score += gameMatrix[i][j];
+                                    if(!scoreAdded){
+                                        score += gameMatrix[i][j];
+                                        scoreAdded = true;
+                                    }
                                     gameMatrix[i - 1][j] = 0;
                                     moved = true;
                                 }
@@ -98,7 +104,10 @@ public class GameInstance extends Thread {
                             for (int j = 0; j < 3; j++) {
                                 if (gameMatrix[i][j].equals(gameMatrix[i][j + 1]) && (gameMatrix[i][j] != 0)) {
                                     gameMatrix[i][j] = gameMatrix[i][j] * 2;
-                                    score += gameMatrix[i][j];
+                                    if(!scoreAdded){
+                                        score += gameMatrix[i][j];
+                                        scoreAdded = true;
+                                    }
                                     gameMatrix[i][j + 1] = 0;
                                     moved = true;
                                 }
@@ -118,7 +127,10 @@ public class GameInstance extends Thread {
                             for (int j = 3; j > 0; j--) {
                                 if (gameMatrix[i][j].equals(gameMatrix[i][j - 1]) && (gameMatrix[i][j] != 0)) {
                                     gameMatrix[i][j] = gameMatrix[i][j] * 2;
-                                    score += gameMatrix[i][j];
+                                    if(!scoreAdded){
+                                        score += gameMatrix[i][j];
+                                        scoreAdded = true;
+                                    }
                                     gameMatrix[i][j - 1] = 0;
                                     moved = true;
                                 }
@@ -138,6 +150,7 @@ public class GameInstance extends Thread {
                     brainController.setCurrentInputs(gameMatrix);
                     brainController.getBlocks().clear();
                     moved = false;
+                    scoreAdded = false;
                 } else if (!moved) {
                     if (!brainController.getBlocks().contains(brainController.getCurrentMove())) {
                         brainController.addBlock(brainController.getCurrentMove());
@@ -228,7 +241,7 @@ public class GameInstance extends Thread {
             if (!genetics.isGroupset() && tries == 10 && index<=genetics.getPopulation()) {
                 brainController.getBrain().setScore((brainController.getBrain().getScore() + score) / 10);
                 brainController.getBrain().setLp(index);
-                System.out.println(this.getName() + " // " + brainController.getBrain().getScore() + " -- " + index + " / " + genetics.getPopulation());
+                //System.out.println(this.getName() + " // " + brainController.getBrain().getScore() + " -- " + index + " / " + genetics.getPopulation());
                 index = gameView.getIndex();
                 gameView.setIndex(gameView.getIndex()+1);
                 genetics.getGenePool().add(brainController.getBrain());
@@ -239,7 +252,7 @@ public class GameInstance extends Thread {
             } else if (genetics.isGroupset() && tries == 10 && index<=genetics.getPopulation()) {
                 brainController.getBrain().setScore((brainController.getBrain().getScore() + score) / 10);
                 brainController.getBrain().setLp(index);
-                System.out.println(this.getName() + " // " + brainController.getBrain().getScore() + " -- " + index + " / " + genetics.getPopulation());
+                //System.out.println(this.getName() + " // " + brainController.getBrain().getScore() + " -- " + index + " / " + genetics.getPopulation());
                 brainController.setBrain(genetics.getGenePool().get(index));
                 index = gameView.getIndex();
                 gameView.setIndex(gameView.getIndex()+1);
