@@ -16,6 +16,7 @@ public class Genetics {
     private int currentGeneration;
     private int weights;
     private Double lowerHalf;
+    private int testToMerge;
 
     public Genetics() {
         best = new Brain();
@@ -25,6 +26,7 @@ public class Genetics {
         groupset = false;
         currentGeneration = 0;
         weights = 0;
+
     }
 
     public Genetics(int population) {
