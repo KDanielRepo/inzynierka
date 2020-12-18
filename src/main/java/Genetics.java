@@ -20,8 +20,8 @@ public class Genetics {
     public Genetics() {
         best = new Brain();
         bestBrains = new ArrayList<>();
-        population = 400;
-        generation = 1000;
+        population = 200;
+        generation = 400;
         groupset = false;
         currentGeneration = 0;
         weights = 0;
@@ -50,10 +50,8 @@ public class Genetics {
         //wybieranie osobnikow do puli c
         List<Brain> sorted = getGenePool().stream().sorted(Comparator.comparing(Brain::getPc).reversed()).collect(Collectors.toList());
         for (int i = 0; i < sorted.size() / 2; i++) {
-            if (getPcPool().size() < population) {
                 getPcPool().add(sorted.get(i));
                 sorted.remove(i);
-            }
         }
         setGenePool(sorted);
         //uzupelnienie puli do liczby parzystej
@@ -69,29 +67,12 @@ public class Genetics {
         }
         setGenePool(new ArrayList<>());
         //krzyzowanie
-        int[] a = new int[population / 2];
         if (weights == 0) {
             getWeightCount();
         }
-        for (int i = 0; i < getPcPool().size(); i++) {
-            int random = ThreadLocalRandom.current().nextInt(0, population / 2);
-            if (a[random] == 0) {
-                a[random] = 1;
-            } else {
-                while (a[random] != 0) {
-                    random = ThreadLocalRandom.current().nextInt(0, population / 2);
-                }
-            }
-            Brain brain1 = getPcPool().get(random);
-            int random2 = ThreadLocalRandom.current().nextInt(0, population / 2);
-            if (a[random2] == 0) {
-                a[random2] = 1;
-            } else {
-                while (a[random2] != 0) {
-                    random2 = ThreadLocalRandom.current().nextInt(0, population / 2);
-                }
-            }
-            Brain brain2 = getPcPool().get(random2);
+        for (int i = 0; i < population/2; i+=2) {
+            Brain brain1 = getPcPool().get(i);
+            Brain brain2 = getPcPool().get(i+1);
             Brain child1 = new Brain();
             child1.createDefaultPerceptronMap();
             child1.setPerceptronMap(brain1.getPerceptronMap());
@@ -104,6 +85,8 @@ public class Genetics {
                 child2.replaceGivenWeightByIndex(k, brain1.getGivenWeightByIndex(k));
                 child1.replaceGivenWeightByIndex(k, brain2.getGivenWeightByIndex(k));
             }
+            getGenePool().add(brain1);
+            getGenePool().add(brain2);
             getGenePool().add(child1);
             getGenePool().add(child2);
         }
@@ -192,7 +175,7 @@ public class Genetics {
 
     public void getRealFittest() {
         List<Brain> sorted = getGenePool().stream().sorted(Comparator.comparing(Brain::getScore).reversed()).collect(Collectors.toList());
-        if (best == null || sorted.get(0).getScore() > best.getScore()) {
+        if (best == null || sorted.get(0).getScore() > best.getScore() && sorted.get(0).equals(best)) {
             best = sorted.get(0);
             convergence = 0;
         }else{
