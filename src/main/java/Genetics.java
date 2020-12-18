@@ -17,6 +17,7 @@ public class Genetics {
     private int weights;
     private Double lowerHalf;
     private int testToMerge;
+    private int kolejnyTest;
 
     public Genetics() {
         best = new Brain();
